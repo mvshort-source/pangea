@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Pangea</title>
+  <meta name="theme-color" content="#0D0D0D"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -21,7 +22,6 @@ const C = {
   grey:     "#6B6B6B",
   silver:   "#A8A8A0",
   fog:      "#D8D5CE",
-  beige:    "#EDE8DF",
   cream:    "#F7F4EE",
   green:    "#1B4D35",
   greenlt:  "#2A6B4A",
@@ -30,172 +30,48 @@ const C = {
 };
 
 const PANELS = [
-  { id: "currents",    label: "Currents",         icon: "〜", color: C.navy     },
-  { id: "wharton",     label: "Wharton",           icon: "◈",  color: C.green    },
-  { id: "techai",      label: "Tech & AI",         icon: "⬡",  color: C.offblack },
-  { id: "money",       label: "Money",             icon: "◆",  color: "#2C5F2E"  },
-  { id: "fashion",     label: "Retail & Fashion",  icon: "◇",  color: C.charcoal },
-  { id: "arts",        label: "Arts & Literature", icon: "❧",  color: "#4A3728"  },
-  { id: "screensound", label: "Screen & Sound",    icon: "♬",  color: "#2D2D4E"  },
-  { id: "faith",       label: "Faith",             icon: "✦",  color: "#3D3520"  },
-  { id: "creativity",  label: "Creativity",        icon: "✳",  color: C.green    },
+  { id: "currents",   label: "Currents",   icon: "〜", color: C.navy     },
+  { id: "wharton",    label: "Wharton",    icon: "◈",  color: "#1A5276"  },
+  { id: "techai",     label: "Tech & AI",  icon: "⬡",  color: C.offblack },
+  { id: "money",      label: "Money",      icon: "◆",  color: "#1E5B1E"  },
+  { id: "creativity", label: "Creativity", icon: "✳",  color: C.green    },
+  { id: "soul",       label: "The Soul",   icon: "✦",  color: "#4A3020"  },
 ];
 
-const SEED_ENTRIES = [
-  { id:1, date:"FEB 14", time:"9:41 AM",  panels:["currents"],         type:"note",   text:"The most interesting companies right now aren't building products — they're building infrastructure. Everyone wants to own the pipes." },
-  { id:2, date:"FEB 13", time:"11:22 PM", panels:["arts"],             type:"note",   text:"Re-reading Didion. The way she structures anxiety as argument is something I want to steal for my own writing." },
-  { id:3, date:"FEB 13", time:"3:05 PM",  panels:["money","wharton"],  type:"upload", sourceType:"pdf",    sourceTitle:"HBR — The New CFO Playbook.pdf",           text:"CFOs are increasingly expected to lead digital transformation, not just financial oversight. The article argues the role has become a proxy for overall organizational adaptability." },
-  { id:4, date:"FEB 12", time:"8:17 AM",  panels:["wharton","techai"], type:"upload", sourceType:"slides", sourceTitle:"Lecture 7 — Network Effects.pdf",          text:"Metcalfe's Law undersells cross-network effects. The real value isn't n² — it's the quality of connections between unlike nodes, which scales differently and creates more durable moats." },
-  { id:5, date:"FEB 11", time:"2:14 PM",  panels:["techai"],           type:"upload", sourceType:"url",    sourceTitle:"Dario Amodei — Machines of Loving Grace",  text:"Amodei's essay argues that AI could compress decades of scientific progress into years — not through automation of existing processes, but by becoming an active intellectual participant in research. The implications for medicine, mental health, and economic development are staggering if the safety conditions hold." },
-  { id:6, date:"FEB 10", time:"9:55 AM",  panels:["creativity"],       type:"note",   text:"Still thinking about the children's book. The voice needs to stay in that register between sincere and gently absurd — the way Sendak never condescends." },
-];
+const STORAGE_KEYS = {
+  entries:  "pangea-v2-entries",
+  queue:    "pangea-v2-queue",
+  books:    "pangea-v2-books",
+};
 
-const STORAGE_KEY = "pangea-entries";
-const QUOTES_KEY = "pangea-quotes";
-const FOUNDING_QUOTE = "I did not know what I thought until I wrote it down.";
+const MOTTO = "I did not know what I thought until I wrote it down.";
 
-const SEED_QUOTES = [
-  // East of Eden
-  { text: "And now that you don't have to be perfect, you can be good.", source: "East of Eden — Steinbeck" },
-  { text: "Timshel — thou mayest.", source: "East of Eden — Steinbeck" },
-  { text: "A man, after he has brushed off the dust and chips of his life, will have left only the hard, clean questions: Was it good or was it evil? Have I done well — or ill?", source: "East of Eden — Steinbeck" },
-  { text: "And it never failed that during the dry years the people forgot about the rich years, and during the wet years they lost all memory of the dry years.", source: "East of Eden — Steinbeck" },
-  // Brothers Karamazov
-  { text: "Love in action is a harsh and dreadful thing compared to love in dreams.", source: "The Brothers Karamazov — Dostoevsky" },
-  { text: "Above all, don't lie to yourself.", source: "The Brothers Karamazov — Dostoevsky" },
-  { text: "Love all God's creation, both the whole and every grain of sand. Love every little leaf, every ray of light.", source: "The Brothers Karamazov — Dostoevsky" },
-  // Crime and Punishment
-  { text: "Pain and suffering are always inevitable for a large intelligence and a deep heart.", source: "Crime and Punishment — Dostoevsky" },
-  { text: "To go wrong in one's own way is better than to go right in someone else's.", source: "Crime and Punishment — Dostoevsky" },
-  // Lord of the Rings / Tolkien
-  { text: "Not all those who wander are lost.", source: "The Fellowship of the Ring — Tolkien" },
-  { text: "Even the smallest person can change the course of the future.", source: "The Two Towers — Tolkien" },
-  { text: "I will not say the day is done, nor bid the stars farewell.", source: "The Return of the King — Tolkien" },
-  { text: "In a hole in the ground there lived a hobbit.", source: "The Hobbit — Tolkien" },
-  { text: "If more of us valued food and cheer and song above hoarded gold, it would be a merrier world.", source: "The Hobbit — Tolkien" },
-  // 100 Years of Solitude
-  { text: "He was still too young to know that the heart's memory eliminates the bad and magnifies the good.", source: "One Hundred Years of Solitude — García Márquez" },
-  { text: "There is always something left to love.", source: "One Hundred Years of Solitude — García Márquez" },
-  // Till We Have Faces
-  { text: "The sweetest thing in all my life has been the longing — to reach the Mountain, to find the place where all the beauty came from.", source: "Till We Have Faces — C.S. Lewis" },
-  { text: "I did not know what I thought until I wrote it down.", source: "Pangea" },
-  // Mere Christianity
-  { text: "Courage is not simply one of the virtues, but the form of every virtue at the testing point.", source: "Mere Christianity — C.S. Lewis" },
-  { text: "If you look for truth, you may find comfort in the end. If you look for comfort you will not get either comfort or truth.", source: "Mere Christianity — C.S. Lewis" },
-  // Narnia
-  { text: "Courage, dear heart.", source: "The Voyage of the Dawn Treader — C.S. Lewis" },
-  { text: "Further up and further in.", source: "The Last Battle — C.S. Lewis" },
-  // The Divine Comedy
-  { text: "In the middle of the journey of our life, I came to myself within a dark wood where the straight way was lost.", source: "Inferno, Canto I — Dante" },
-  { text: "The love that moves the sun and the other stars.", source: "Paradiso, Canto XXXIII — Dante" },
-  { text: "Consider your origins: you were not made to live as brutes, but to follow virtue and knowledge.", source: "Inferno, Canto XXVI — Dante" },
-  { text: "Hope not ever to see Heaven. I have come to lead you to the other shore; into eternal darkness, into fire and ice.", source: "Inferno, Canto III — Dante" },
-  // Augustine
-  { text: "Our heart is restless, until it repose in Thee.", source: "Confessions — Augustine" },
-  { text: "Thou madest us for Thyself, and our heart is restless, until it repose in Thee.", source: "Confessions — Augustine" },
-  { text: "What then is time? If no one asks me, I know what it is. If I wish to explain it to him who asks, I do not know.", source: "Confessions — Augustine" },
-  // The Bible
-  { text: "For now we see through a glass, darkly.", source: "1 Corinthians 13:12" },
-  { text: "Be still, and know.", source: "Psalm 46:10" },
-  { text: "The truth will set you free.", source: "John 8:32" },
-  { text: "I can do all things through Christ who strengthens me.", source: "Philippians 4:13" },
-  // Paradise Lost
-  { text: "The mind is its own place, and in itself can make a heaven of hell, a hell of heaven.", source: "Paradise Lost — Milton" },
-  { text: "Long is the way and hard, that out of Hell leads up to light.", source: "Paradise Lost — Milton" },
-  // The Aeneid
-  { text: "Perhaps one day it will be good to remember even these things.", source: "The Aeneid — Virgil" },
-  { text: "Do not yield to misfortunes, but advance more boldly to meet them.", source: "The Aeneid — Virgil" },
-  // Dune
-  { text: "I must not fear. Fear is the mind-killer.", source: "Dune — Frank Herbert" },
-  { text: "The mystery of life isn't a problem to solve, but a reality to experience.", source: "Dune — Frank Herbert" },
-  // The Great Gatsby
-  { text: "So we beat on, boats against the current, borne back ceaselessly into the past.", source: "The Great Gatsby — Fitzgerald" },
-  { text: "Can't repeat the past? Why of course you can!", source: "The Great Gatsby — Fitzgerald" },
-  // This Side of Paradise
-  { text: "I know myself, but that is all.", source: "This Side of Paradise — Fitzgerald" },
-  // Hemingway
-  { text: "The world breaks everyone, and afterward, many are strong at the broken places.", source: "A Farewell to Arms — Hemingway" },
-  { text: "There is nothing to writing. All you do is sit down at a typewriter and bleed.", source: "Ernest Hemingway" },
-  { text: "The sun also rises.", source: "Ecclesiastes / The Sun Also Rises — Hemingway" },
-  { text: "He was a old man who fished alone in a skiff in the Gulf Stream.", source: "The Old Man and the Sea — Hemingway" },
-  { text: "But man is not made for defeat. A man can be destroyed but not defeated.", source: "The Old Man and the Sea — Hemingway" },
-  // Grapes of Wrath
-  { text: "And this I believe: that the free, exploring mind of the individual human is the most valuable thing in the world.", source: "East of Eden — Steinbeck" },
-  { text: "Wherever there's a fight so hungry people can eat, I'll be there.", source: "The Grapes of Wrath — Steinbeck" },
-  // Invisible Cities / Calvino
-  { text: "You take delight not in a city's seven or seventy wonders, but in the answer it gives to a question of yours.", source: "Invisible Cities — Calvino" },
-  { text: "The city of your desire exists, but it will be reached only by not mistaking it for another.", source: "Invisible Cities — Calvino" },
-  // If on a winter's night a traveler
-  { text: "Reading is going toward something that is about to be, and no one yet knows what it will be.", source: "If on a winter's night a traveler — Calvino" },
-  // Norwegian Wood
-  { text: "If you only read the books that everyone else is reading, you can only think what everyone else is thinking.", source: "Norwegian Wood — Murakami" },
-  { text: "Don't feel sorry for yourself. Only assholes do that.", source: "Norwegian Wood — Murakami" },
-  // Unbearable Lightness of Being
-  { text: "The heaviest of burdens is therefore simultaneously an image of life's most intense fulfillment.", source: "The Unbearable Lightness of Being — Kundera" },
-  { text: "We can never know what to want, because, living only one life, we can neither compare it with our previous lives nor perfect it in our lives to come.", source: "The Unbearable Lightness of Being — Kundera" },
-  // Book of Laughter and Forgetting
-  { text: "The struggle of man against power is the struggle of memory against forgetting.", source: "The Book of Laughter and Forgetting — Kundera" },
-  // Flannery O'Connor
-  { text: "The truth does not change according to our ability to stomach it.", source: "Flannery O'Connor" },
-  { text: "I write because I don't know what I think until I read what I say.", source: "Flannery O'Connor" },
-  { text: "Grace changes us and the change is painful.", source: "Flannery O'Connor" },
-  // T.S. Eliot — The Waste Land
-  { text: "April is the cruellest month, breeding lilacs out of the dead land.", source: "The Waste Land — T.S. Eliot" },
-  { text: "I will show you fear in a handful of dust.", source: "The Waste Land — T.S. Eliot" },
-  { text: "These fragments I have shored against my ruins.", source: "The Waste Land — T.S. Eliot" },
-  // The Love Song of J. Alfred Prufrock
-  { text: "Do I dare disturb the universe?", source: "The Love Song of J. Alfred Prufrock — T.S. Eliot" },
-  { text: "I have measured out my life with coffee spoons.", source: "The Love Song of J. Alfred Prufrock — T.S. Eliot" },
-  { text: "In the room the women come and go, talking of Michelangelo.", source: "The Love Song of J. Alfred Prufrock — T.S. Eliot" },
-  // W.B. Yeats
-  { text: "Things fall apart; the centre cannot hold.", source: "The Second Coming — W.B. Yeats" },
-  { text: "The best lack all conviction, while the worst are full of passionate intensity.", source: "The Second Coming — W.B. Yeats" },
-  { text: "How can we know the dancer from the dance?", source: "Among School Children — W.B. Yeats" },
-  { text: "Tread softly because you tread on my dreams.", source: "He Wishes for the Cloths of Heaven — W.B. Yeats" },
-  // Kurt Vonnegut
-  { text: "We are what we pretend to be, so we must be careful about what we pretend to be.", source: "Mother Night — Vonnegut" },
-  { text: "So it goes.", source: "Slaughterhouse-Five — Vonnegut" },
-  { text: "We have to continually be jumping off cliffs and developing our wings on the way down.", source: "Kurt Vonnegut" },
-  // Picture of Dorian Gray
-  { text: "The only way to get rid of a temptation is to yield to it.", source: "The Picture of Dorian Gray — Wilde" },
-  { text: "To define is to limit.", source: "The Picture of Dorian Gray — Wilde" },
-  { text: "The books that the world calls immoral are books that show the world its own shame.", source: "The Picture of Dorian Gray — Wilde" },
-  // Watchmen
-  { text: "The world will look up and shout 'Save us!' — and I'll whisper 'No.'", source: "Watchmen — Alan Moore" },
-  { text: "Nothing ends. Nothing ever ends.", source: "Watchmen — Alan Moore" },
-  // This is How You Lose Her
-  { text: "The half-life of love is forever.", source: "This Is How You Lose Her — Junot Díaz" },
-  // The Bridge of San Luis Rey
-  { text: "There is a land of the living and a land of the dead, and the bridge is love, the only survival, the only meaning.", source: "The Bridge of San Luis Rey — Thornton Wilder" },
-  // To Kill a Mockingbird
-  { text: "You never really understand a person until you consider things from his point of view — until you climb into his skin and walk around in it.", source: "To Kill a Mockingbird — Harper Lee" },
-  { text: "Courage is not a man with a gun in his hand. It's knowing you're licked before you begin but you begin anyway.", source: "To Kill a Mockingbird — Harper Lee" },
-  // A Handful of Dust
-  { text: "I will show you something different from either your shadow at morning striding behind you or your shadow at evening rising to meet you.", source: "The Waste Land — T.S. Eliot" },
-  // The Psychology of Money
-  { text: "The most important thing I can tell you about investing is that it's not about what you know. It's about how you behave.", source: "The Psychology of Money — Morgan Housel" },
-  { text: "Spending money to show people how much money you have is the fastest way to have less money.", source: "The Psychology of Money — Morgan Housel" },
-  // Aquinas
-  { text: "To one who has faith, no explanation is necessary. To one without faith, no explanation is possible.", source: "Thomas Aquinas" },
-  // Oscar Wao
-  { text: "The fact that I am writing to you in English already falsifies what I wanted to tell you.", source: "The Brief Wondrous Life of Oscar Wao — Junot Díaz" },
-  // Pale Fire
-  { text: "Life is a great surprise. I do not see why death should not be an even greater one.", source: "Pale Fire — Nabokov" },
-];
+// ── Storage polyfill ──────────────────────────────────────────────────────────
+const _st = {
+  get: async (k) => {
+    if (window.storage && typeof window.storage.get === "function")
+      try { return await window.storage.get(k); } catch(e) {}
+    try { const v = localStorage.getItem(k); return v ? { value: v } : null; } catch { return null; }
+  },
+  set: async (k, v) => {
+    if (window.storage && typeof window.storage.set === "function")
+      try { return await window.storage.set(k, v); } catch(e) {}
+    try { localStorage.setItem(k, v); return { key: k, value: v }; } catch { return null; }
+  },
+};
 
-const CSS = "\n@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');\n*{box-sizing:border-box;margin:0;padding:0;}\n\n/* NAV */\n.nav{border-bottom:4px solid #0D0D0D;padding:0 40px;display:flex;align-items:stretch;justify-content:space-between;background:#F7F4EE;position:sticky;top:0;z-index:100;}\n.nav-wordmark{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;letter-spacing:10px;text-transform:uppercase;padding:16px 32px 16px 0;color:#0D0D0D;cursor:pointer;border-right:4px solid #0D0D0D;display:flex;align-items:center;gap:0;}\n.nav-wordmark-accent{color:#1B4D35;}\n.nav-links{display:flex;}\n.nav-link{padding:0 24px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:none;border-right:1px solid #D8D5CE;color:#6B6B6B;transition:all .15s;}\n.nav-link:last-child{border-right:none;}\n.nav-link:hover,.nav-link.active{background:#0D0D0D;color:#F7F4EE;}\n.nav-add{color:#1B4D35;border-left:4px solid #1B4D35;font-weight:600;}\n.nav-add:hover{background:#1B4D35!important;color:white!important;}\n\n/* MASTHEAD */\n.masthead{background:#0D0D0D;padding:8px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1B4D35;gap:24px;}\n.masthead-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#A8A8A0;text-transform:uppercase;white-space:nowrap;}\n.masthead-c{font-family:'Playfair Display',serif;font-size:11px;font-style:italic;color:#D8D5CE;text-align:center;flex:1;opacity:.75;}\n.masthead-r{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#1B4D35;text-transform:uppercase;white-space:nowrap;}\n\n/* SEARCH */\n.search-wrap{border-bottom:4px solid #0D0D0D;padding:0 40px;background:#F7F4EE;display:flex;align-items:center;gap:16px;}\n.search-icon{font-size:14px;color:#6B6B6B;padding:18px 0;}\n.search-input{flex:1;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:20px;outline:none;padding:18px 0;color:#0D0D0D;}\n.search-input::placeholder{color:#D8D5CE;}\n.search-count{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;white-space:nowrap;}\n.search-clear{background:none;border:1px solid #D8D5CE;padding:5px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.search-clear:hover{border-color:#0D0D0D;color:#0D0D0D;}\n.search-results{padding:40px;}\n.sr-hdr{font-family:'Playfair Display',serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:28px;border-bottom:2px solid #0D0D0D;padding-bottom:14px;}\n.sr-entry{padding:24px 0;border-bottom:1px solid #D8D5CE;cursor:pointer;}\n.sr-entry:hover .j-txt{color:#1B4D35;}\nmark{background:#C8DDD0;padding:0 2px;color:#0D0D0D;}\n\n/* HERO */\n.hero{border-bottom:4px solid #0D0D0D;display:grid;grid-template-columns:1fr 360px;}\n.hero-left{padding:56px 40px 48px;border-right:4px solid #0D0D0D;display:flex;flex-direction:column;min-height:280px;}\n.hero-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:24px;display:flex;align-items:center;gap:10px;}\n.hero-eyebrow::after{content:'';flex:1;height:1px;background:#1B4D35;opacity:.35;}\n.hero-quote{font-family:'Playfair Display',serif;font-size:clamp(20px,2.8vw,32px);font-weight:400;font-style:italic;line-height:1.45;color:#0D0D0D;letter-spacing:-.2px;flex:1;display:flex;align-items:center;padding:4px 0 28px;}\n.hero-source{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;display:flex;align-items:center;gap:10px;margin-top:auto;}\n.hero-source-dot{width:5px;height:5px;background:#1B4D35;border-radius:50%;flex-shrink:0;}\n.hero-right{background:#0D0D0D;padding:40px 32px;display:flex;flex-direction:column;justify-content:space-between;}\n.hero-stat{font-family:'Playfair Display',serif;font-size:100px;font-weight:900;line-height:1;color:#FFFFFF;letter-spacing:-4px;}\n.hero-stat-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-top:2px;}\n.hero-divider{height:1px;background:#2E2E2E;margin:20px 0;}\n.hero-mini-row{display:flex;gap:0;}\n.hero-mini{flex:1;border-right:1px solid #2E2E2E;padding-right:20px;margin-right:20px;}\n.hero-mini:last-child{border-right:none;padding-right:0;margin-right:0;}\n.hero-mini-n{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:#FFFFFF;line-height:1;}\n.hero-mini-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:4px;}\n\n/* WRITE BAR */\n.write-bar{background:#1A1A1A;border-bottom:4px solid #1B4D35;padding:0 40px;display:flex;gap:0;align-items:stretch;min-height:60px;}\n.write-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;white-space:nowrap;display:flex;align-items:center;padding-right:20px;border-right:1px solid #2E2E2E;margin-right:20px;}\n.write-input{flex:1;background:transparent;border:none;color:#F7F4EE;font-family:'Playfair Display',serif;font-size:17px;padding:0;outline:none;}\n.write-input::placeholder{color:#2E2E2E;}\n.write-sel{background:transparent;border:none;border-left:1px solid #2E2E2E;color:#6B6B6B;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:0 18px;outline:none;cursor:pointer;}\n.write-sel option{background:#1A1A1A;color:#F7F4EE;}\n.post-btn{background:#1B4D35;color:white;border:none;padding:0 28px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background .15s;border-left:1px solid #2E2E2E;}\n.post-btn:hover{background:#2A6B4A;}\n.upload-btn{background:transparent;color:#6B6B6B;border:none;border-left:1px solid #2E2E2E;padding:0 18px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:color .15s;}\n.upload-btn:hover{color:#F7F4EE;}\n\n/* MAIN GRID */\n.main-grid{display:grid;grid-template-columns:1fr 380px;}\n.panels-section{border-right:4px solid #0D0D0D;padding:40px;}\n.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:28px;border-bottom:2px solid #0D0D0D;padding-bottom:14px;}\n.sec-title{font-family:'Playfair Display',serif;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#0D0D0D;}\n.sec-count{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;}\n\n/* PANEL GRID */\n.panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:#0D0D0D;border:2px solid #0D0D0D;}\n.pc{background:#F7F4EE;padding:24px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;border-right:1px solid #D8D5CE;border-bottom:1px solid #D8D5CE;}\n.pc:nth-child(3n){border-right:none;}\n.pc:nth-child(7),.pc:nth-child(8),.pc:nth-child(9){border-bottom:none;}\n.pc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--pc);transform:scaleX(0);transition:transform .25s;transform-origin:left;}\n.pc:hover::after{transform:scaleX(1);}\n.pc:hover{background:#0D0D0D;}\n.pc:hover .pi{color:var(--pc);}\n.pc:hover .pn{color:#F7F4EE;}\n.pc:hover .pp{color:#6B6B6B;}\n.pi{font-size:18px;margin-bottom:10px;display:block;transition:color .2s;color:#A8A8A0;}\n.pn{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;line-height:1.2;margin-bottom:6px;transition:color .2s;color:#0D0D0D;}\n.pp{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:.5px;transition:color .2s;}\n\n/* JOURNAL SIDEBAR */\n.j-sidebar{padding:40px 28px;}\n.j-feed{display:flex;flex-direction:column;}\n.j-entry{padding:22px 0;border-bottom:1px solid #D8D5CE;}\n.j-entry:first-child{padding-top:0;}\n.j-meta{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;}\n.j-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.j-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;color:white;}\n.j-badge{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;background:#D8D5CE;color:#6B6B6B;border:1px solid #A8A8A0;}\n.j-src{font-family:'DM Mono',monospace;font-size:9px;color:#A8A8A0;margin-bottom:8px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.j-txt{font-family:'Playfair Display',serif;font-size:14px;line-height:1.65;color:#1A1A1A;}\n.del-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:12px;padding:2px 4px;transition:color .15s;flex-shrink:0;}\n.del-btn:hover{color:#8B2000;}\n.filter-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #D8D5CE;}\n.fb{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border:1px solid #D8D5CE;background:none;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.fb:hover,.fb.on{background:#0D0D0D;color:#F7F4EE;border-color:#0D0D0D;}\n\n/* PANEL PAGE */\n.panel-page{min-height:100vh;background:#F7F4EE;}\n.pp-hero{border-bottom:4px solid #0D0D0D;display:grid;grid-template-columns:8px 1fr auto;}\n.pp-accent{background:var(--dc);}\n.pp-hero-body{padding:52px 40px;}\n.pp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;margin-bottom:14px;}\n.pp-title{font-family:'Playfair Display',serif;font-size:clamp(48px,7vw,84px);font-weight:900;line-height:1;letter-spacing:-3px;color:var(--dc);}\n.pp-count{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:16px;}\n.pp-back-col{border-left:4px solid #0D0D0D;display:flex;align-items:flex-start;padding:40px;}\n.pp-back{background:none;border:2px solid #0D0D0D;padding:12px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;color:#0D0D0D;white-space:nowrap;}\n.pp-back:hover{background:#0D0D0D;color:#F7F4EE;}\n.pp-body{padding:40px;}\n.pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0;background:#0D0D0D;border:2px solid #0D0D0D;}\n.pp-card{background:#F7F4EE;padding:28px;border-right:1px solid #D8D5CE;border-bottom:1px solid #D8D5CE;}\n.pp-card-meta{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;}\n.pp-card-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.pp-card-src{font-family:'DM Mono',monospace;font-size:9px;color:#6B6B6B;margin-bottom:10px;display:block;}\n.pp-card-txt{font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1A1A1A;}\n.pp-empty{padding:100px 40px;text-align:center;}\n.pp-empty-icon{font-size:48px;margin-bottom:16px;opacity:.15;}\n.pp-empty-txt{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#A8A8A0;margin-bottom:8px;}\n.pp-empty-sub{font-family:'DM Sans',sans-serif;font-size:14px;color:#A8A8A0;}\n\n/* SOURCES */\n.sources{padding:40px;border-top:4px solid #0D0D0D;background:#0D0D0D;color:#F7F4EE;}\n.src-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:28px;display:flex;align-items:center;gap:12px;}\n.src-label::after{content:'';flex:1;height:1px;background:#2E2E2E;}\n.src-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #2E2E2E;}\n.src-item{padding:24px;border-right:1px solid #2E2E2E;}\n.src-item:last-child{border-right:none;}\n.src-name{font-family:'Playfair Display',serif;font-weight:700;font-size:16px;margin-bottom:6px;}\n.src-desc{font-family:'DM Sans',sans-serif;font-size:12px;color:#6B6B6B;line-height:1.5;margin-bottom:12px;}\n.src-link{font-family:'DM Mono',monospace;font-size:10px;color:#1B4D35;letter-spacing:1px;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:color .15s;}\n.src-link:hover{color:#F7F4EE;}\n\n/* SAVE INDICATOR */\n.save-indicator{position:fixed;bottom:24px;right:24px;background:#1B4D35;color:white;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;z-index:300;opacity:0;transition:opacity .3s;border-left:3px solid #2A6B4A;}\n.save-indicator.show{opacity:1;}\n\n/* JOURNAL PAGE */\n.journal-page{min-height:100vh;background:#F7F4EE;}\n.journal-hero{border-bottom:4px solid #0D0D0D;padding:48px 40px 36px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end;}\n.journal-title{font-family:'Playfair Display',serif;font-size:clamp(48px,7vw,80px);font-weight:900;line-height:1;letter-spacing:-3px;color:#0D0D0D;}\n.journal-title em{color:#1B4D35;font-style:normal;}\n.journal-subtitle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;margin-top:12px;}\n.journal-hero-stats{display:flex;gap:32px;align-items:flex-end;}\n.jh-stat{text-align:right;}\n.jh-n{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;line-height:1;color:#0D0D0D;}\n.jh-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:2px;}\n.journal-write{background:#1A1A1A;border-bottom:4px solid #1B4D35;padding:28px 40px;}\n.journal-write-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:14px;}\n.journal-textarea{width:100%;background:transparent;border:none;border-bottom:2px solid #2E2E2E;color:#F7F4EE;font-family:'Playfair Display',serif;font-size:20px;line-height:1.6;padding:8px 0 16px;outline:none;resize:none;}\n.journal-textarea::placeholder{color:#2E2E2E;}\n.journal-textarea:focus{border-bottom-color:#1B4D35;}\n.journal-write-footer{display:flex;align-items:center;gap:12px;margin-top:14px;}\n.journal-body{display:grid;grid-template-columns:240px 1fr;}\n.journal-filters{border-right:4px solid #0D0D0D;padding:32px 24px;position:sticky;top:0;max-height:100vh;overflow-y:auto;}\n.jf-section{margin-bottom:28px;}\n.jf-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;margin-bottom:12px;display:block;}\n.jf-btn{display:block;width:100%;text-align:left;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 10px;border:none;background:none;cursor:pointer;color:#6B6B6B;transition:all .15s;margin-bottom:2px;}\n.jf-btn:hover,.jf-btn.on{background:#0D0D0D;color:#F7F4EE;}\n.jf-btn.on-panel{color:white;}\n.journal-feed{padding:0;}\n.day-group{border-bottom:4px solid #0D0D0D;}\n.day-header{padding:20px 40px;background:#0D0D0D;display:flex;align-items:baseline;gap:16px;position:sticky;top:0;z-index:10;}\n.day-date{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#FFFFFF;}\n.day-count{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;}\n.journal-entry{padding:32px 40px;border-bottom:1px solid #D8D5CE;transition:background .15s;}\n.journal-entry:hover{background:white;}\n.journal-entry:last-child{border-bottom:none;}\n.je-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}\n.je-time{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.je-src{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;margin-bottom:12px;display:block;}\n.je-text{font-family:'Playfair Display',serif;font-size:17px;line-height:1.75;color:#1A1A1A;}\n.je-takeaway{margin-top:16px;padding-top:16px;border-top:1px solid #D8D5CE;}\n.je-takeaway-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;margin-bottom:6px;display:block;}\n.je-takeaway-text{font-family:'Playfair Display',serif;font-size:16px;line-height:1.7;color:#1B4D35;font-style:italic;}\n.je-del{margin-left:auto;background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:12px;padding:2px 4px;transition:color .15s;}\n.je-del:hover{color:#8B2000;}\n.journal-empty{padding:100px 40px;text-align:center;}\n.journal-empty-txt{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#A8A8A0;margin-bottom:8px;}\n.journal-empty-sub{font-family:'DM Sans',sans-serif;font-size:14px;color:#A8A8A0;}\n\n/* MODAL */\n.overlay{position:fixed;inset:0;background:rgba(13,13,13,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}\n.modal{background:#F7F4EE;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;border:3px solid #0D0D0D;display:flex;flex-direction:column;}\n.m-hdr{padding:24px 28px 20px;border-bottom:3px solid #0D0D0D;display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0;}\n.m-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#0D0D0D;}\n.m-close{background:none;border:none;font-size:22px;cursor:pointer;color:#6B6B6B;line-height:1;}\n.m-body{padding:28px;flex:1;}\n.m-footer{padding:20px 28px;border-top:1px solid #D8D5CE;display:flex;gap:12px;justify-content:flex-end;flex-shrink:0;background:#F7F4EE;}\n.m-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-bottom:10px;display:block;}\n.m-sec{margin-bottom:24px;}\n.tabs{display:flex;border:2px solid #0D0D0D;margin-bottom:20px;}\n.tab{flex:1;padding:11px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border:none;background:none;cursor:pointer;color:#6B6B6B;border-right:1px solid #D8D5CE;transition:all .15s;}\n.tab:last-child{border-right:none;}\n.tab.on{background:#0D0D0D;color:#F7F4EE;}\n.dz{border:2px dashed #D8D5CE;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;background:white;}\n.dz:hover,.dz.drag{border-color:#1B4D35;background:#EDF4F0;}\n.dz-icon{font-size:36px;margin-bottom:12px;}\n.dz-main{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px;color:#0D0D0D;}\n.dz-sub{font-size:13px;color:#6B6B6B;}\n.url-inp{width:100%;border:2px solid #D8D5CE;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:white;transition:border-color .15s;}\n.url-inp:focus{border-color:#0D0D0D;}\n.processing{text-align:center;padding:48px 24px;}\n.spinner{width:44px;height:44px;border:3px solid #D8D5CE;border-top-color:#1B4D35;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}\n@keyframes spin{to{transform:rotate(360deg);}}\n.proc-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:8px;color:#0D0D0D;}\n.proc-step{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#1B4D35;margin-bottom:6px;}\n.proc-sub{font-size:13px;color:#6B6B6B;}\n.ai-banner{background:#EDF4F0;border:1px solid #A8CABB;padding:10px 14px;margin-bottom:20px;display:flex;gap:8px;align-items:center;}\n.ai-banner-txt{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#1B4D35;}\n.sum-box{background:white;border:2px solid #D8D5CE;padding:20px;margin-bottom:4px;}\n.sum-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;margin-bottom:12px;display:block;}\n.sum-ta{width:100%;border:none;outline:none;font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1A1A1A;resize:none;background:transparent;}\n.title-inp{width:100%;border:2px solid #D8D5CE;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:white;transition:border-color .15s;}\n.title-inp:focus{border-color:#0D0D0D;}\n.panel-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}\n.ppc{border:2px solid #D8D5CE;padding:10px 8px;cursor:pointer;transition:all .15s;text-align:center;background:white;position:relative;}\n.ppc:hover{border-color:#A8A8A0;}\n.ppc.on{border-color:var(--ppc);background:var(--ppc);}\n.ppc.on .ppc-icon,.ppc.on .ppc-lbl{color:white;}\n.ppc-icon{font-size:16px;display:block;margin-bottom:4px;transition:color .15s;}\n.ppc-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#6B6B6B;line-height:1.2;transition:color .15s;}\n.ppc-check{position:absolute;top:4px;right:4px;width:14px;height:14px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--ppc);font-weight:900;}\n.ai-sug{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;margin-top:8px;}\n.ai-sug span{color:#1B4D35;}\n.btn-ghost{background:none;border:2px solid #D8D5CE;padding:10px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.btn-ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}\n.btn-solid{background:#0D0D0D;color:white;border:none;padding:10px 24px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .15s;}\n.btn-solid:hover{background:#1B4D35;}\n.btn-solid:disabled{opacity:.35;pointer-events:none;}\n.err-box{background:#FDF0EE;border:1px solid #E8B4A8;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8B2000;margin-bottom:16px;}\n";
-
+// ── Helpers ───────────────────────────────────────────────────────────────────
 async function analyzeWithClaude(tab, file, urlVal) {
-  const panelList = "currents, wharton, techai, money, fashion, arts, screensound, faith, creativity";
+  const panelList = "currents, wharton, techai, money, creativity, soul";
   const messages = [];
   if (tab === "url") {
-    messages.push({ role:"user", content:`Analyze this URL and return ONLY a JSON object with: "title" (clean source title), "summary" (3-5 sentence intelligent prose summary), "suggestedPanels" (array of 1-3 IDs from: ${panelList}). URL: ${urlVal}` });
+    messages.push({ role:"user", content:`Analyze this URL and return ONLY a JSON object with: "title" (clean source title), "summary" (3-5 sentence intelligent prose summary of the key ideas), "suggestedPanels" (array of 1-2 panel IDs from: ${panelList}). URL: ${urlVal}` });
   } else {
     const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
     const isImage = file.type.startsWith("image/");
     messages.push({ role:"user", content:[
       isImage ? {type:"image",source:{type:"base64",media_type:file.type,data:base64}} : {type:"document",source:{type:"base64",media_type:"application/pdf",data:base64}},
-      {type:"text",text:`Analyze this ${isImage?"image":"document"} and return ONLY a JSON object with: "title" (clean descriptive title), "summary" (3-5 sentence intelligent prose summary), "suggestedPanels" (array of 1-3 IDs from: ${panelList}).`}
+      {type:"text",text:`Analyze this ${isImage?"image":"document"} and return ONLY a JSON object with: "title" (clean descriptive title), "summary" (3-5 sentence intelligent prose summary), "suggestedPanels" (array of 1-2 IDs from: ${panelList}).`}
     ]});
   }
   const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages})});
@@ -207,202 +83,547 @@ async function analyzeWithClaude(tab, file, urlVal) {
 
 function highlight(text, q) {
   if (!q.trim()) return text;
-  const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'));
-  return parts.map((p,i)=>i%2===1?`<mark>${p}</mark>`:p).join('');
+  const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`,"gi"));
+  return parts.map((p,i)=>i%2===1?`<mark>${p}</mark>`:p).join("");
 }
 
-const _st={
-  get:async(k)=>{
-    if(window.storage&&typeof window.storage.get==="function")try{return await window.storage.get(k)}catch(e){}
-    try{const v=localStorage.getItem(k);return v?{value:v}:null}catch{return null}
+function ts() {
+  const d = new Date();
+  return {
+    date: d.toLocaleDateString("en-US",{month:"short",day:"numeric"}).toUpperCase(),
+    time: d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}),
+  };
+}
+
+const badgeMap = {pdf:"PDF",slides:"SLIDES",url:"LINK",image:"IMAGE"};
+
+// ── CSS ───────────────────────────────────────────────────────────────────────
+const CSS = "\n@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');\n*{box-sizing:border-box;margin:0;padding:0;}\nbody{background:#F7F4EE;-webkit-font-smoothing:antialiased;}\n\n/* NAV */\n.nav{border-bottom:4px solid #0D0D0D;padding:0 40px;display:flex;align-items:stretch;justify-content:space-between;background:#F7F4EE;position:sticky;top:0;z-index:100;}\n.nav-wm{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;letter-spacing:10px;text-transform:uppercase;padding:16px 28px 16px 0;color:#0D0D0D;cursor:pointer;border-right:4px solid #0D0D0D;display:flex;align-items:center;}\n.nav-wm-g{color:#1B4D35;}\n.nav-links{display:flex;}\n.nav-link{padding:0 20px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;background:none;border-right:1px solid #D8D5CE;color:#6B6B6B;transition:all .15s;}\n.nav-link:last-child{border-right:none;}\n.nav-link:hover,.nav-link.active{background:#0D0D0D;color:#F7F4EE;}\n.nav-add{color:#1B4D35;border-left:4px solid #1B4D35;font-weight:600;}\n.nav-add:hover{background:#1B4D35 !important;color:#FFFFFF !important;}\n\n/* MASTHEAD */\n.masthead{background:#0D0D0D;padding:10px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1B4D35;gap:24px;}\n.masthead-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#A8A8A0;text-transform:uppercase;white-space:nowrap;}\n.masthead-c{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;color:#F7F4EE;text-align:center;flex:1;opacity:.9;}\n.masthead-r{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#1B4D35;text-transform:uppercase;white-space:nowrap;}\n\n/* SEARCH */\n.search-wrap{border-bottom:4px solid #0D0D0D;padding:0 40px;background:#F7F4EE;display:flex;align-items:center;gap:16px;}\n.search-input{flex:1;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:20px;outline:none;padding:18px 0;color:#0D0D0D;}\n.search-input::placeholder{color:#D8D5CE;}\n.search-count{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;white-space:nowrap;}\n.search-clear{background:none;border:1px solid #D8D5CE;padding:5px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.search-clear:hover{border-color:#0D0D0D;color:#0D0D0D;}\n.search-results{padding:40px;}\n.sr-hdr{font-family:'Playfair Display',serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:28px;border-bottom:2px solid #0D0D0D;padding-bottom:14px;color:#0D0D0D;}\n.sr-entry{padding:24px 0;border-bottom:1px solid #D8D5CE;cursor:pointer;}\n.sr-entry:hover .j-txt{color:#1B4D35;}\nmark{background:#C8DDD0;padding:0 2px;color:#0D0D0D;}\n\n/* READING NOW */\n.reading-now{border-bottom:4px solid #0D0D0D;display:grid;grid-template-columns:200px 1fr;}\n.rn-label-col{background:#0D0D0D;padding:32px 28px;display:flex;flex-direction:column;justify-content:space-between;}\n.rn-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:12px;}\n.rn-icon{font-size:32px;opacity:.15;color:#FFFFFF;}\n.rn-body{padding:28px 40px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;}\n.rn-book{border:2px solid #D8D5CE;padding:14px 18px;display:flex;align-items:center;gap:14px;background:#FFFFFF;min-width:200px;max-width:320px;position:relative;}\n.rn-book-spine{width:4px;align-self:stretch;background:var(--bc);flex-shrink:0;}\n.rn-book-info{}\n.rn-book-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#0D0D0D;line-height:1.2;margin-bottom:3px;}\n.rn-book-author{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#6B6B6B;}\n.rn-book-del{position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:11px;transition:color .15s;}\n.rn-book-del:hover{color:#8B2000;}\n.rn-add{border:2px dashed #D8D5CE;padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;background:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#A8A8A0;}\n.rn-add:hover{border-color:#1B4D35;color:#1B4D35;}\n.rn-add-form{display:flex;gap:0;border:2px solid #0D0D0D;min-width:340px;}\n.rn-add-inp{flex:1;border:none;outline:none;padding:12px 14px;font-family:'Playfair Display',serif;font-size:14px;color:#0D0D0D;background:#FFFFFF;}\n.rn-add-inp::placeholder{color:#D8D5CE;}\n.rn-add-btn{background:#0D0D0D;color:#FFFFFF;border:none;padding:0 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;white-space:nowrap;}\n.rn-add-btn:hover{background:#1B4D35;}\n\n/* WRITE BAR */\n.write-bar{background:#1A1A1A;border-bottom:4px solid #1B4D35;padding:0 40px;display:flex;gap:0;align-items:stretch;min-height:58px;}\n.write-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;white-space:nowrap;display:flex;align-items:center;padding-right:20px;border-right:1px solid #2E2E2E;margin-right:20px;}\n.write-input{flex:1;background:transparent;border:none;color:#F7F4EE;font-family:'Playfair Display',serif;font-size:17px;padding:0;outline:none;}\n.write-input::placeholder{color:#3A3A3A;}\n.write-sel{background:transparent;border:none;border-left:1px solid #2E2E2E;color:#A8A8A0;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:0 16px;outline:none;cursor:pointer;}\n.write-sel option{background:#1A1A1A;color:#F7F4EE;}\n.post-btn{background:#1B4D35;color:#FFFFFF;border:none;padding:0 24px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background .15s;border-left:1px solid #2E2E2E;}\n.post-btn:hover{background:#2A6B4A;}\n.upload-btn{background:transparent;color:#A8A8A0;border:none;border-left:1px solid #2E2E2E;padding:0 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:color .15s;}\n.upload-btn:hover{color:#F7F4EE;}\n\n/* MAIN GRID */\n.main-grid{display:grid;grid-template-columns:1fr 360px;}\n.panels-section{border-right:4px solid #0D0D0D;padding:36px 40px;}\n.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;border-bottom:2px solid #0D0D0D;padding-bottom:12px;}\n.sec-title{font-family:'Playfair Display',serif;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#0D0D0D;}\n.sec-sub{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;}\n\n/* PANEL GRID */\n.panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:#0D0D0D;border:2px solid #0D0D0D;}\n.pc{background:#F7F4EE;padding:22px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;border-right:1px solid #D8D5CE;border-bottom:1px solid #D8D5CE;}\n.pc:nth-child(3n){border-right:none;}\n.pc:nth-child(4),.pc:nth-child(5),.pc:nth-child(6){border-bottom:none;}\n.pc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--pc);transform:scaleX(0);transition:transform .25s;transform-origin:left;}\n.pc:hover::after{transform:scaleX(1);}\n.pc:hover{background:#0D0D0D;}\n.pc:hover .pc-icon{color:var(--pc);}\n.pc:hover .pc-name{color:#F7F4EE;}\n.pc:hover .pc-count{color:#A8A8A0;}\n.pc-icon{font-size:16px;margin-bottom:10px;display:block;transition:color .2s;color:#A8A8A0;}\n.pc-name{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;line-height:1.2;margin-bottom:5px;transition:color .2s;color:#0D0D0D;}\n.pc-count{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:.5px;transition:color .2s;}\n\n/* JOURNAL SIDEBAR */\n.j-sidebar{padding:36px 28px;}\n.j-feed{display:flex;flex-direction:column;}\n.j-entry{padding:20px 0;border-bottom:1px solid #D8D5CE;}\n.j-entry:first-child{padding-top:0;}\n.j-meta{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;}\n.j-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.j-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;color:#FFFFFF;}\n.j-badge{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;background:#D8D5CE;color:#6B6B6B;border:1px solid #A8A8A0;}\n.j-src{font-family:'DM Mono',monospace;font-size:9px;color:#A8A8A0;margin-bottom:8px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.j-txt{font-family:'Playfair Display',serif;font-size:14px;line-height:1.65;color:#1A1A1A;}\n.j-takeaway{margin-top:10px;padding-top:10px;border-top:1px solid #D8D5CE;}\n.j-takeaway-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;display:block;margin-bottom:4px;}\n.j-takeaway-txt{font-family:'Playfair Display',serif;font-size:13px;line-height:1.6;color:#1B4D35;font-style:italic;}\n.del-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:12px;padding:2px 4px;transition:color .15s;flex-shrink:0;}\n.del-btn:hover{color:#8B2000;}\n.filter-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #D8D5CE;}\n.fb{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border:1px solid #D8D5CE;background:none;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.fb:hover,.fb.on{background:#0D0D0D;color:#F7F4EE;border-color:#0D0D0D;}\n\n/* QUEUE PAGE */\n.queue-page{min-height:100vh;background:#F7F4EE;}\n.queue-hero{background:#0D0D0D;border-bottom:4px solid #1B4D35;padding:40px;}\n.queue-hero-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;}\n.queue-title{font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,72px);font-weight:900;line-height:1;letter-spacing:-2px;color:#FFFFFF;}\n.queue-title em{color:#1B4D35;font-style:normal;}\n.queue-count{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A8A8A0;}\n.queue-input-wrap{display:flex;gap:0;background:#1A1A1A;border:2px solid #2E2E2E;}\n.queue-input{flex:1;background:transparent;border:none;color:#F7F4EE;font-family:'Playfair Display',serif;font-size:18px;padding:16px 20px;outline:none;}\n.queue-input::placeholder{color:#3A3A3A;}\n.queue-url-inp{background:transparent;border:none;border-left:1px solid #2E2E2E;color:#A8A8A0;font-family:'DM Mono',monospace;font-size:10px;padding:0 16px;outline:none;width:200px;}\n.queue-url-inp::placeholder{color:#3A3A3A;}\n.queue-panel-sel{background:transparent;border:none;border-left:1px solid #2E2E2E;color:#A8A8A0;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:0 14px;outline:none;cursor:pointer;}\n.queue-panel-sel option{background:#1A1A1A;color:#F7F4EE;}\n.queue-add-btn{background:#1B4D35;color:#FFFFFF;border:none;padding:0 28px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background .15s;}\n.queue-add-btn:hover{background:#2A6B4A;}\n.queue-body{padding:0;}\n.queue-tabs{display:flex;border-bottom:4px solid #0D0D0D;}\n.q-tab{flex:1;padding:14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:none;background:none;cursor:pointer;color:#6B6B6B;border-right:1px solid #D8D5CE;transition:all .15s;}\n.q-tab:last-child{border-right:none;}\n.q-tab.on{background:#0D0D0D;color:#F7F4EE;}\n.queue-list{padding:0;}\n.q-item{padding:20px 40px;border-bottom:1px solid #D8D5CE;display:flex;align-items:flex-start;gap:16px;transition:background .15s;}\n.q-item:hover{background:#FFFFFF;}\n.q-item.done{opacity:.5;}\n.q-check{width:20px;height:20px;border:2px solid #D8D5CE;border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .15s;}\n.q-check:hover{border-color:#1B4D35;}\n.q-check.checked{background:#1B4D35;border-color:#1B4D35;color:#FFFFFF;font-size:10px;}\n.q-content{flex:1;min-width:0;}\n.q-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#0D0D0D;margin-bottom:4px;line-height:1.3;}\n.q-title.done{text-decoration:line-through;color:#A8A8A0;}\n.q-url{font-family:'DM Mono',monospace;font-size:9px;color:#A8A8A0;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;margin-bottom:6px;}\n.q-meta{display:flex;align-items:center;gap:8px;}\n.q-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.q-panel-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;color:#FFFFFF;}\n.q-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}\n.q-file-btn{background:none;border:1px solid #D8D5CE;padding:5px 12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:#6B6B6B;transition:all .15s;white-space:nowrap;}\n.q-file-btn:hover{border-color:#1B4D35;color:#1B4D35;}\n.q-del{background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:14px;padding:2px 4px;transition:color .15s;}\n.q-del:hover{color:#8B2000;}\n.queue-empty{padding:80px 40px;text-align:center;}\n.queue-empty-icon{font-size:40px;margin-bottom:16px;opacity:.15;}\n.queue-empty-txt{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#A8A8A0;margin-bottom:8px;}\n.queue-empty-sub{font-family:'DM Sans',sans-serif;font-size:14px;color:#A8A8A0;}\n\n/* FILE TO JOURNAL MODAL */\n.ftj-overlay{position:fixed;inset:0;background:rgba(13,13,13,.88);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;}\n.ftj-modal{background:#F7F4EE;width:100%;max-width:560px;border:3px solid #0D0D0D;}\n.ftj-hdr{padding:20px 24px;border-bottom:2px solid #0D0D0D;display:flex;align-items:baseline;justify-content:space-between;}\n.ftj-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#0D0D0D;}\n.ftj-close{background:none;border:none;font-size:20px;cursor:pointer;color:#6B6B6B;}\n.ftj-body{padding:24px;}\n.ftj-src{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:#A8A8A0;margin-bottom:16px;text-transform:uppercase;}\n.ftj-ta{width:100%;border:2px solid #D8D5CE;padding:14px;font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#0D0D0D;outline:none;resize:none;background:#FFFFFF;transition:border-color .15s;}\n.ftj-ta:focus{border-color:#0D0D0D;}\n.ftj-footer{padding:16px 24px;border-top:1px solid #D8D5CE;display:flex;gap:10px;justify-content:flex-end;}\n\n/* PANEL PAGE */\n.panel-page{min-height:100vh;background:#F7F4EE;}\n.pp-hero{border-bottom:4px solid #0D0D0D;display:grid;grid-template-columns:8px 1fr auto;}\n.pp-accent{background:var(--dc);}\n.pp-hero-body{padding:48px 40px;}\n.pp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;margin-bottom:12px;}\n.pp-title{font-family:'Playfair Display',serif;font-size:clamp(44px,7vw,80px);font-weight:900;line-height:1;letter-spacing:-3px;color:var(--dc);}\n.pp-count{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:14px;}\n.pp-back-col{border-left:4px solid #0D0D0D;display:flex;align-items:flex-start;padding:36px;}\n.pp-back{background:none;border:2px solid #0D0D0D;padding:10px 18px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;color:#0D0D0D;white-space:nowrap;}\n.pp-back:hover{background:#0D0D0D;color:#F7F4EE;}\n.pp-body{padding:40px;}\n.pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0;background:#0D0D0D;border:2px solid #0D0D0D;}\n.pp-card{background:#F7F4EE;padding:28px;border-right:1px solid #D8D5CE;border-bottom:1px solid #D8D5CE;}\n.pp-card-meta{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;}\n.pp-card-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.pp-card-src{font-family:'DM Mono',monospace;font-size:9px;color:#6B6B6B;margin-bottom:10px;display:block;}\n.pp-card-txt{font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1A1A1A;}\n.pp-card-takeaway{margin-top:14px;padding-top:14px;border-top:1px solid #D8D5CE;}\n.pp-card-takeaway-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;display:block;margin-bottom:6px;}\n.pp-card-takeaway-txt{font-family:'Playfair Display',serif;font-size:14px;line-height:1.65;color:#1B4D35;font-style:italic;}\n.pp-empty{padding:100px 40px;text-align:center;}\n.pp-empty-icon{font-size:48px;margin-bottom:16px;opacity:.15;}\n.pp-empty-txt{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#A8A8A0;margin-bottom:8px;}\n.pp-empty-sub{font-family:'DM Sans',sans-serif;font-size:14px;color:#A8A8A0;}\n\n/* JOURNAL PAGE */\n.journal-page{min-height:100vh;background:#F7F4EE;}\n.journal-hero{border-bottom:4px solid #0D0D0D;padding:44px 40px 36px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end;}\n.journal-title{font-family:'Playfair Display',serif;font-size:clamp(44px,6vw,72px);font-weight:900;line-height:1;letter-spacing:-2px;color:#0D0D0D;}\n.journal-title em{color:#1B4D35;font-style:normal;}\n.journal-subtitle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:10px;}\n.journal-hero-stats{display:flex;gap:28px;align-items:flex-end;}\n.jh-stat{text-align:right;}\n.jh-n{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;line-height:1;color:#0D0D0D;}\n.jh-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-top:2px;}\n.journal-write{background:#1A1A1A;border-bottom:4px solid #1B4D35;padding:24px 40px;}\n.journal-write-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:12px;}\n.journal-textarea{width:100%;background:transparent;border:none;border-bottom:2px solid #2E2E2E;color:#F7F4EE;font-family:'Playfair Display',serif;font-size:18px;line-height:1.6;padding:6px 0 14px;outline:none;resize:none;}\n.journal-textarea::placeholder{color:#3A3A3A;}\n.journal-textarea:focus{border-bottom-color:#1B4D35;}\n.journal-write-footer{display:flex;align-items:center;gap:12px;margin-top:12px;}\n.journal-body{display:grid;grid-template-columns:220px 1fr;}\n.journal-filters{border-right:4px solid #0D0D0D;padding:28px 20px;position:sticky;top:0;max-height:100vh;overflow-y:auto;background:#F7F4EE;}\n.jf-section{margin-bottom:24px;}\n.jf-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;margin-bottom:10px;display:block;}\n.jf-btn{display:block;width:100%;text-align:left;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 10px;border:none;background:none;cursor:pointer;color:#6B6B6B;transition:all .15s;margin-bottom:2px;}\n.jf-btn:hover,.jf-btn.on{background:#0D0D0D;color:#F7F4EE;}\n.journal-feed{padding:0;}\n.day-group{border-bottom:4px solid #0D0D0D;}\n.day-header{padding:16px 40px;background:#0D0D0D;display:flex;align-items:baseline;gap:16px;position:sticky;top:0;z-index:10;}\n.day-date{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:#FFFFFF;}\n.day-count{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#A8A8A0;}\n.journal-entry{padding:28px 40px;border-bottom:1px solid #D8D5CE;transition:background .15s;}\n.journal-entry:hover{background:#FFFFFF;}\n.je-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}\n.je-time{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#A8A8A0;}\n.je-src{font-family:'DM Mono',monospace;font-size:9px;color:#6B6B6B;margin-bottom:10px;display:block;}\n.je-text{font-family:'Playfair Display',serif;font-size:17px;line-height:1.75;color:#1A1A1A;}\n.je-takeaway{margin-top:14px;padding-top:14px;border-top:1px solid #D8D5CE;}\n.je-takeaway-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;margin-bottom:6px;display:block;}\n.je-takeaway-text{font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1B4D35;font-style:italic;}\n.je-del{margin-left:auto;background:none;border:none;cursor:pointer;color:#D8D5CE;font-size:12px;padding:2px 4px;transition:color .15s;}\n.je-del:hover{color:#8B2000;}\n.journal-empty{padding:80px 40px;text-align:center;}\n.journal-empty-txt{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#A8A8A0;margin-bottom:8px;}\n.journal-empty-sub{font-family:'DM Sans',sans-serif;font-size:14px;color:#A8A8A0;}\n\n/* SOURCES FOOTER */\n.sources{padding:36px 40px;border-top:4px solid #0D0D0D;background:#0D0D0D;}\n.src-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:#1B4D35;margin-bottom:24px;display:flex;align-items:center;gap:12px;}\n.src-label::after{content:'';flex:1;height:1px;background:#2E2E2E;}\n.src-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #2E2E2E;}\n.src-item{padding:20px 24px;border-right:1px solid #2E2E2E;}\n.src-item:nth-child(3n){border-right:none;}\n.src-item:nth-child(n+4){border-top:1px solid #2E2E2E;}\n.src-name{font-family:'Playfair Display',serif;font-weight:700;font-size:15px;margin-bottom:4px;color:#FFFFFF;}\n.src-desc{font-family:'DM Sans',sans-serif;font-size:12px;color:#A8A8A0;line-height:1.5;margin-bottom:10px;}\n.src-link{font-family:'DM Mono',monospace;font-size:9px;color:#1B4D35;letter-spacing:1px;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:color .15s;}\n.src-link:hover{color:#F7F4EE;}\n\n/* SAVE TOAST */\n.save-toast{position:fixed;bottom:24px;right:24px;background:#1B4D35;color:#FFFFFF;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;z-index:400;opacity:0;transition:opacity .3s;border-left:3px solid #2A6B4A;}\n.save-toast.show{opacity:1;}\n\n/* ADD MODAL */\n.overlay{position:fixed;inset:0;background:rgba(13,13,13,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}\n.modal{background:#F7F4EE;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;border:3px solid #0D0D0D;display:flex;flex-direction:column;}\n.m-hdr{padding:22px 28px 18px;border-bottom:3px solid #0D0D0D;display:flex;align-items:baseline;justify-content:space-between;flex-shrink:0;}\n.m-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#0D0D0D;}\n.m-close{background:none;border:none;font-size:22px;cursor:pointer;color:#6B6B6B;line-height:1;}\n.m-body{padding:28px;flex:1;}\n.m-footer{padding:18px 28px;border-top:1px solid #D8D5CE;display:flex;gap:12px;justify-content:flex-end;flex-shrink:0;background:#F7F4EE;}\n.m-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6B6B6B;margin-bottom:10px;display:block;}\n.m-sec{margin-bottom:22px;}\n.tabs{display:flex;border:2px solid #0D0D0D;margin-bottom:20px;}\n.tab{flex:1;padding:11px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border:none;background:none;cursor:pointer;color:#6B6B6B;border-right:1px solid #D8D5CE;transition:all .15s;}\n.tab:last-child{border-right:none;}\n.tab.on{background:#0D0D0D;color:#F7F4EE;}\n.dz{border:2px dashed #D8D5CE;padding:44px 24px;text-align:center;cursor:pointer;transition:all .2s;background:#FFFFFF;}\n.dz:hover,.dz.drag{border-color:#1B4D35;background:#EDF4F0;}\n.dz-icon{font-size:32px;margin-bottom:10px;}\n.dz-main{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px;color:#0D0D0D;}\n.dz-sub{font-size:13px;color:#6B6B6B;}\n.url-inp{width:100%;border:2px solid #D8D5CE;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:#FFFFFF;transition:border-color .15s;color:#0D0D0D;}\n.url-inp:focus{border-color:#0D0D0D;}\n.url-note{font-family:'DM Mono',monospace;font-size:9px;color:#A8A8A0;letter-spacing:1px;margin-top:8px;line-height:1.5;}\n.processing{text-align:center;padding:48px 24px;}\n.spinner{width:40px;height:40px;border:3px solid #D8D5CE;border-top-color:#1B4D35;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 18px;}\n@keyframes spin{to{transform:rotate(360deg);}}\n.proc-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:8px;color:#0D0D0D;}\n.proc-step{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#1B4D35;margin-bottom:6px;}\n.ai-banner{background:#EDF4F0;border:1px solid #A8CABB;padding:10px 14px;margin-bottom:20px;display:flex;gap:8px;align-items:center;}\n.ai-banner-txt{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#1B4D35;}\n.sum-box{background:#FFFFFF;border:2px solid #D8D5CE;padding:18px;}\n.sum-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#1B4D35;margin-bottom:10px;display:block;}\n.sum-ta{width:100%;border:none;outline:none;font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1A1A1A;resize:none;background:transparent;}\n.title-inp{width:100%;border:2px solid #D8D5CE;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:#FFFFFF;transition:border-color .15s;color:#0D0D0D;}\n.title-inp:focus{border-color:#0D0D0D;}\n.panel-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}\n.ppc{border:2px solid #D8D5CE;padding:10px 8px;cursor:pointer;transition:all .15s;text-align:center;background:#FFFFFF;position:relative;}\n.ppc:hover{border-color:#A8A8A0;}\n.ppc.on{border-color:var(--ppc);background:var(--ppc);}\n.ppc.on .ppc-icon,.ppc.on .ppc-lbl{color:#FFFFFF;}\n.ppc-icon{font-size:15px;display:block;margin-bottom:4px;transition:color .15s;color:#6B6B6B;}\n.ppc-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#6B6B6B;line-height:1.2;transition:color .15s;}\n.ppc-check{position:absolute;top:4px;right:4px;width:14px;height:14px;background:#FFFFFF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--ppc);font-weight:900;}\n.ai-sug{font-family:'DM Mono',monospace;font-size:10px;color:#6B6B6B;letter-spacing:1px;margin-top:8px;}\n.ai-sug span{color:#1B4D35;}\n.btn-ghost{background:none;border:2px solid #D8D5CE;padding:10px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:#6B6B6B;transition:all .15s;}\n.btn-ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}\n.btn-solid{background:#0D0D0D;color:#FFFFFF;border:none;padding:10px 24px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .15s;}\n.btn-solid:hover{background:#1B4D35;}\n.btn-solid:disabled{opacity:.35;pointer-events:none;}\n.err-box{background:#FDF0EE;border:1px solid #E8B4A8;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8B2000;margin-bottom:16px;}\n.takeaway-inp{width:100%;border:2px solid #D8D5CE;padding:14px 16px;background:#FFFFFF;font-family:'Playfair Display',serif;font-size:15px;line-height:1.7;color:#1A1A1A;resize:none;outline:none;transition:border-color .2s;display:block;}\n.takeaway-inp:focus{border-color:#0D0D0D;}\n.takeaway-inp.nudge{border-color:#1B4D35;}\n.nudge-msg{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:#1B4D35;text-transform:uppercase;margin-top:6px;}\n\n@media(max-width:768px){\n  .nav{padding:0 16px;}\n  .nav-wm{font-size:18px;letter-spacing:6px;padding-right:16px;}\n  .nav-link{padding:0 12px;font-size:9px;}\n  .masthead{padding:8px 16px;}\n  .masthead-c{display:none;}\n  .reading-now{grid-template-columns:1fr;}\n  .rn-label-col{padding:16px;flex-direction:row;align-items:center;gap:12px;}\n  .rn-body{padding:16px;}\n  .write-bar{padding:0 16px;}\n  .main-grid{grid-template-columns:1fr;}\n  .panels-section{border-right:none;border-bottom:4px solid #0D0D0D;padding:24px 16px;}\n  .j-sidebar{padding:24px 16px;}\n  .queue-hero{padding:24px 16px;}\n  .queue-input-wrap{flex-direction:column;}\n  .queue-url-inp{width:100%;border-left:none;border-top:1px solid #2E2E2E;padding:12px 16px;}\n  .queue-panel-sel{border-left:none;border-top:1px solid #2E2E2E;padding:12px 16px;}\n  .queue-add-btn{padding:14px;width:100%;}\n  .q-item{padding:16px;}\n  .journal-body{grid-template-columns:1fr;}\n  .journal-filters{display:none;}\n  .journal-entry{padding:20px 16px;}\n  .day-header{padding:12px 16px;}\n  .pp-hero{grid-template-columns:6px 1fr;}\n  .pp-back-col{display:none;}\n  .pp-body{padding:20px 16px;}\n  .sources{padding:24px 16px;}\n  .src-grid{grid-template-columns:1fr;}\n  .src-item{border-right:none !important;border-bottom:1px solid #2E2E2E;}\n}\n";
+
+// ── Main Component ────────────────────────────────────────────────────────────
+const __st = {
+  get: async (k) => {
+    if (window.storage && typeof window.storage.get === "function")
+      try { return await window.storage.get(k); } catch(e) {}
+    try { const v = localStorage.getItem(k); return v ? { value: v } : null; } catch { return null; }
   },
-  set:async(k,v)=>{
-    if(window.storage&&typeof window.storage.set==="function")try{return await window.storage.set(k,v)}catch(e){}
-    try{localStorage.setItem(k,v);return{key:k,value:v}}catch{return null}
-  }
+  set: async (k, v) => {
+    if (window.storage && typeof window.storage.set === "function")
+      try { return await window.storage.set(k, v); } catch(e) {}
+    try { localStorage.setItem(k, v); return { key: k, value: v }; } catch { return null; }
+  },
 };
-function Dashboard() {
-  const [entries, setEntries]           = useState([]);
-  const [loaded, setLoaded]             = useState(false);
-  const [view, setView]                 = useState("home");
-  const [activePanelPage, setActivePanelPage] = useState(null);
-  const [journalText, setJournalText]   = useState("");
-  const [journalPanel, setJournalPanel] = useState("");
-  const [filterPanel, setFilterPanel]   = useState(null);
-  const [searchQ, setSearchQ]           = useState("");
-  const [showSaved, setShowSaved]       = useState(false);
-  const [quoteIdx, setQuoteIdx]         = useState(0);
 
-  // Journal page state
-  const [jFilter, setJFilter]           = useState("all");   // all | notes | uploads
-  const [jPanel, setJPanel]             = useState(null);
-  const [jWriting, setJWriting]         = useState("");
-  const [jWritingPanel, setJWritingPanel] = useState("");
-  const [jExpanded, setJExpanded]       = useState(null);
+function Pangea() {
+  const [entries,  setEntries]  = useState([]);
+  const [queue,    setQueue]    = useState([]);
+  const [books,    setBooks]    = useState([]);
+  const [loaded,   setLoaded]   = useState(false);
+  const [view,     setView]     = useState("home");
+  const [activePanelId, setActivePanelId] = useState(null);
 
-  // Modal
-  const [showModal, setShowModal] = useState(false);
-  const [tab, setTab]             = useState("file");
-  const [stage, setStage]         = useState("input");
-  const [procStep, setProcStep]   = useState("");
-  const [dragOver, setDragOver]   = useState(false);
+  // Home write bar
+  const [writeText,  setWriteText]  = useState("");
+  const [writePanel, setWritePanel] = useState("");
+
+  // Journal page
+  const [jFilter,  setJFilter]  = useState("all");
+  const [jPanel,   setJPanel]   = useState(null);
+  const [jWriting, setJWriting] = useState("");
+  const [jWritePanel, setJWritePanel] = useState("");
+
+  // Queue page
+  const [qInput,    setQInput]    = useState("");
+  const [qUrl,      setQUrl]      = useState("");
+  const [qPanel,    setQPanel]    = useState("");
+  const [qTab,      setQTab]      = useState("pending");
+  const [ftjItem,   setFtjItem]   = useState(null);
+  const [ftjNote,   setFtjNote]   = useState("");
+  const [ftjPanel,  setFtjPanel]  = useState("");
+
+  // Reading Now
+  const [addingBook,    setAddingBook]    = useState(false);
+  const [bookTitle,     setBookTitle]     = useState("");
+  const [bookAuthor,    setBookAuthor]    = useState("");
+
+  // Search & filter
+  const [searchQ,     setSearchQ]     = useState("");
+  const [filterPanel, setFilterPanel] = useState(null);
+
+  // Add modal
+  const [showModal,  setShowModal]  = useState(false);
+  const [tab,        setTab]        = useState("file");
+  const [stage,      setStage]      = useState("input");
+  const [procStep,   setProcStep]   = useState("");
+  const [dragOver,   setDragOver]   = useState(false);
   const [chosenFile, setChosenFile] = useState(null);
-  const [urlVal, setUrlVal]         = useState("");
-  const [editSum, setEditSum]       = useState("");
-  const [editTitle, setEditTitle]   = useState("");
-  const [editPanels, setEditPanels]     = useState([]);
-  const [aiPanels, setAiPanels]         = useState([]);
-  const [editTakeaway, setEditTakeaway] = useState("");
-  const [nudgeTakeaway, setNudgeTakeaway] = useState(false);
-  const [aiType, setAiType]         = useState("");
-  const [apiError, setApiError]     = useState("");
+  const [urlVal,     setUrlVal]     = useState("");
+  const [editSum,    setEditSum]    = useState("");
+  const [editTitle,  setEditTitle]  = useState("");
+  const [editPanels, setEditPanels] = useState([]);
+  const [aiPanels,   setAiPanels]   = useState([]);
+  const [editTakeaway,    setEditTakeaway]    = useState("");
+  const [nudgeTakeaway,   setNudgeTakeaway]   = useState(false);
+  const [aiType,     setAiType]     = useState("");
+  const [apiError,   setApiError]   = useState("");
+
+  // Toast
+  const [showSaved, setShowSaved] = useState(false);
+
   const fileRef = useRef();
 
-  // ── Load ──────────────────────────────────────────────────────────────────
+  // ── Load ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     async function load() {
       try {
-        const r = await window._st.get(STORAGE_KEY);
-        const saved = r ? JSON.parse(r.value) : null;
-        setEntries(saved && saved.length > 0 ? saved : SEED_ENTRIES);
-      } catch { setEntries(SEED_ENTRIES); }
-      setLoaded(true);
+        const [re, rq, rb] = await Promise.all([
+          __st.get(STORAGE_KEYS.entries),
+          __st.get(STORAGE_KEYS.queue),
+          __st.get(STORAGE_KEYS.books),
+        ]);
+        setEntries(re ? JSON.parse(re.value) : []);
+        setQueue(rq   ? JSON.parse(rq.value)  : []);
+        setBooks(rb   ? JSON.parse(rb.value)  : []);
+      } catch { setEntries([]); setQueue([]); setBooks([]); }
+      setLoaded(false);
+      // small delay so React finishes
+      setTimeout(() => setLoaded(true), 50);
     }
     load();
   }, []);
 
-  // ── Rotating quote: cycle through saved text entries ─────────────────────
-  const quotePool = entries.filter(e => e.type === "note" && e.text.length > 40);
-  const currentQuote = quotePool.length > 0 ? quotePool[quoteIdx % quotePool.length] : null;
-  const displayQuote = currentQuote ? `"${currentQuote.text}"` : `"${FOUNDING_QUOTE}"`;
-  const displaySource = currentQuote ? ((currentQuote.panels||[]).map(id=>PANELS.find(p=>p.id===id)?.label).filter(Boolean).join(", ") || "Your journal") : "PANGEA";
+  // ── Persist ─────────────────────────────────────────────────────────────────
+  const toast = () => { setShowSaved(true); setTimeout(() => setShowSaved(false), 1800); };
 
-  useEffect(() => {
-    if (quotePool.length <= 1) return;
-    const t = setInterval(()=>setQuoteIdx(i=>i+1), 8000);
-    return ()=>clearInterval(t);
-  }, [quotePool.length]);
+  const saveEntries = (next) => { setEntries(next); __st.set(STORAGE_KEYS.entries, JSON.stringify(next)); toast(); };
+  const saveQueue   = (next) => { setQueue(next);   __st.set(STORAGE_KEYS.queue,   JSON.stringify(next)); toast(); };
+  const saveBooks   = (next) => { setBooks(next);   __st.set(STORAGE_KEYS.books,   JSON.stringify(next)); toast(); };
 
-  // ── Persist ───────────────────────────────────────────────────────────────
-  async function persist(next) {
-    try { await window._st.set(STORAGE_KEY, JSON.stringify(next)); setShowSaved(true); setTimeout(()=>setShowSaved(false),1800); } catch {}
-  }
-  function addEntry(e) { const next=[e,...entries]; setEntries(next); persist(next); }
-  function deleteEntry(id) { const next=entries.filter(e=>e.id!==id); setEntries(next); persist(next); }
+  const addEntry  = (e) => saveEntries([e, ...entries]);
+  const delEntry  = (id) => saveEntries(entries.filter(e => e.id !== id));
+  const addQueue  = (q) => saveQueue([q, ...queue]);
+  const delQueue  = (id) => saveQueue(queue.filter(q => q.id !== id));
+  const toggleDone = (id) => saveQueue(queue.map(q => q.id === id ? {...q, done: !q.done} : q));
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  const getPD = id => PANELS.find(p=>p.id===id);
-  const ts = () => { const d=new Date(); return { date:d.toLocaleDateString("en-US",{month:"short",day:"numeric"}).toUpperCase(), time:d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}) }; };
-  const badgeMap = {pdf:"PDF",slides:"SLIDES",url:"LINK",image:"IMAGE"};
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const getPD = (id) => PANELS.find(p => p.id === id);
+  const today = new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).toUpperCase();
 
-  // ── Post note ─────────────────────────────────────────────────────────────
-  const postNote = () => {
-    if (!journalText.trim()) return;
-    addEntry({id:Date.now(),...ts(),panels:journalPanel?[journalPanel]:[],type:"note",text:journalText.trim()});
-    setJournalText(""); setJournalPanel("");
+  // This week
+  const MONTHS = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+  const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const thisWeek = entries.filter(e => {
+    try { const [m,d] = e.date.split(" "); return new Date(new Date().getFullYear(), MONTHS[m]??0, parseInt(d)) >= oneWeekAgo; }
+    catch { return false; }
+  }).length;
+
+  // Post note
+  const postNote = (text, panel, cb) => {
+    if (!text.trim()) return;
+    addEntry({id:Date.now(), ...ts(), panels:panel?[panel]:[], type:"note", text:text.trim()});
+    cb();
   };
 
-  // ── Analyze ───────────────────────────────────────────────────────────────
-  const getType = ()=>{ if(tab==="url")return"url"; if(tab==="image")return"image"; if(!chosenFile)return"pdf"; const n=chosenFile.name.toLowerCase(); return(n.includes("slide")||n.includes("lecture"))?"slides":"pdf"; };
+  // ── Modal ───────────────────────────────────────────────────────────────────
+  const closeModal = () => {
+    setShowModal(false); setStage("input"); setChosenFile(null); setUrlVal("");
+    setEditSum(""); setEditTitle(""); setEditPanels([]); setAiPanels([]);
+    setEditTakeaway(""); setNudgeTakeaway(false); setAiType(""); setApiError(""); setProcStep("");
+  };
+  const togglePP = (id) => setEditPanels(p => p.includes(id) ? p.filter(x=>x!==id) : [...p, id]);
+  const getType  = () => { if(tab==="url")return"url"; if(tab==="image")return"image"; if(!chosenFile)return"pdf"; return chosenFile.name.toLowerCase().includes("slide")||chosenFile.name.toLowerCase().includes("lecture")?"slides":"pdf"; };
 
   const analyze = async () => {
-    const type=getType(); setAiType(type); setStage("processing"); setApiError("");
+    const type = getType(); setAiType(type); setStage("processing"); setApiError("");
     try {
       setProcStep("Reading content…"); await new Promise(r=>setTimeout(r,400));
       setProcStep("Extracting key ideas…");
-      const result = await analyzeWithClaude(tab,chosenFile,urlVal);
-      setProcStep("Building summary…"); await new Promise(r=>setTimeout(r,300));
-      setEditTitle(result.title||chosenFile?.name||urlVal);
-      setEditSum(result.summary||"");
-      const sug=Array.isArray(result.suggestedPanels)?result.suggestedPanels:(result.suggestedPanel?[result.suggestedPanel]:[]);
+      const result = await analyzeWithClaude(tab, chosenFile, urlVal);
+      setProcStep("Done.");
+      setEditTitle(result.title || chosenFile?.name || urlVal);
+      setEditSum(result.summary || "");
+      const sug = Array.isArray(result.suggestedPanels) ? result.suggestedPanels : (result.suggestedPanel?[result.suggestedPanel]:[]);
       setAiPanels(sug); setEditPanels(sug); setStage("review");
-    } catch(err){ setApiError(err.message||"Something went wrong."); setStage("input"); }
+    } catch(err) { setApiError(err.message || "Something went wrong."); setStage("input"); }
   };
 
-  const save = () => {
+  const saveUpload = () => {
     if (!editTakeaway.trim()) { setNudgeTakeaway(true); return; }
-    addEntry({id:Date.now(),...ts(),panels:editPanels,type:"upload",sourceType:aiType,sourceTitle:editTitle,text:editSum.trim(),takeaway:editTakeaway.trim()});
+    addEntry({id:Date.now(), ...ts(), panels:editPanels, type:"upload", sourceType:aiType, sourceTitle:editTitle, text:editSum.trim(), takeaway:editTakeaway.trim()});
     closeModal();
   };
-  const saveAnyway = () => {
-    addEntry({id:Date.now(),...ts(),panels:editPanels,type:"upload",sourceType:aiType,sourceTitle:editTitle,text:editSum.trim(),takeaway:""});
+  const saveUploadAnyway = () => {
+    addEntry({id:Date.now(), ...ts(), panels:editPanels, type:"upload", sourceType:aiType, sourceTitle:editTitle, text:editSum.trim(), takeaway:""});
     closeModal();
   };
-  const closeModal = () => { setShowModal(false);setStage("input");setChosenFile(null);setUrlVal("");setEditSum("");setEditTitle("");setEditPanels([]);setAiPanels([]);setAiType("");setApiError("");setProcStep("");setEditTakeaway("");setNudgeTakeaway(false); };
-  const togglePP = id => setEditPanels(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
 
-  // ── Search ────────────────────────────────────────────────────────────────
-  const searchResults = searchQ.trim().length>1
-    ? entries.filter(e=>{ const q=searchQ.toLowerCase(); return e.text.toLowerCase().includes(q)||(e.sourceTitle||"").toLowerCase().includes(q)||(e.panels||[]).some(pid=>(getPD(pid)?.label||"").toLowerCase().includes(q)); })
+  // ── Search ──────────────────────────────────────────────────────────────────
+  const searchResults = searchQ.trim().length > 1
+    ? entries.filter(e => { const q = searchQ.toLowerCase(); return e.text.toLowerCase().includes(q)||(e.sourceTitle||"").toLowerCase().includes(q)||(e.panels||[]).some(pid=>(getPD(pid)?.label||"").toLowerCase().includes(q)); })
     : [];
 
-  const filtered = filterPanel ? entries.filter(e=>(e.panels||[]).includes(filterPanel)) : entries;
+  // ── Shared Nav ──────────────────────────────────────────────────────────────
+  function Nav({ current }) {
+    return (
+      <nav className="nav">
+        <div className="nav-wm" onClick={()=>{ setView("home"); setActivePanelId(null); }}>
+          PAN<span className="nav-wm-g">G</span>EA
+        </div>
+        <div className="nav-links">
+          <button className={`nav-link ${current==="home"?"active":""}`}    onClick={()=>{ setView("home"); setActivePanelId(null); }}>Home</button>
+          <button className={`nav-link ${current==="queue"?"active":""}`}   onClick={()=>setView("queue")}>Queue</button>
+          <button className={`nav-link ${current==="journal"?"active":""}`} onClick={()=>setView("journal")}>Journal</button>
+          <button className="nav-link nav-add" onClick={()=>setShowModal(true)}>+ Add</button>
+        </div>
+      </nav>
+    );
+  }
 
-  // This week count
-  const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const MONTHS = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
-  const thisWeek = entries.filter(e => {
-    try {
-      const [mon, day] = e.date.split(" ");
-      const d = new Date(new Date().getFullYear(), MONTHS[mon] ?? 0, parseInt(day));
-      return d >= oneWeekAgo;
-    } catch { return false; }
-  }).length;
+  function Masthead({ right }) {
+    return (
+      <div className="masthead">
+        <span className="masthead-l">{today}</span>
+        <span className="masthead-c">&#8220;{MOTTO}&#8221;</span>
+        <span className="masthead-r">{right}</span>
+      </div>
+    );
+  }
 
-  const today = new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).toUpperCase();
+  // ── Entry card (shared) ──────────────────────────────────────────────────────
+  function EntryCard({ entry, large = false }) {
+    const panels = (entry.panels||[]).map(id=>getPD(id)).filter(Boolean);
+    const sz = large ? 17 : 14;
+    return (
+      <div>
+        <div className="j-meta">
+          <span className="j-date">{entry.date} · {entry.time}</span>
+          {panels.map(pd=><span key={pd.id} className="j-tag" style={{background:pd.color}}>{pd.label}</span>)}
+          {entry.sourceType&&<span className="j-badge">{badgeMap[entry.sourceType]}</span>}
+          <button className="del-btn" onClick={()=>delEntry(entry.id)}>✕</button>
+        </div>
+        {entry.sourceTitle&&<span className="j-src">↳ {entry.sourceTitle}</span>}
+        <div className="j-txt" style={{fontSize:sz}}>{entry.text}</div>
+        {entry.takeaway&&(
+          <div className="j-takeaway">
+            <span className="j-takeaway-lbl">Your takeaway</span>
+            <div className="j-takeaway-txt">{entry.takeaway}</div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
-  if (!loaded) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"DM Mono,monospace",fontSize:12,letterSpacing:3,color:C.grey,background:C.cream,textTransform:"uppercase"}}>Loading Pangea…</div>;
+  // ── Add Modal ────────────────────────────────────────────────────────────────
+  function renderModal() {
+    return (
+      <div className="overlay" onClick={e=>e.target===e.currentTarget&&closeModal()}>
+        <div className="modal">
+          <div className="m-hdr">
+            <span className="m-title">{stage==="input"?"Add to Pangea":stage==="processing"?"Analyzing…":"Review & File"}</span>
+            <button className="m-close" onClick={closeModal}>✕</button>
+          </div>
+          {stage==="input"&&<>
+            <div className="m-body">
+              {apiError&&<div className="err-box">⚠ {apiError}</div>}
+              <div className="tabs">
+                {[["file","📄 PDF / Slides"],["image","📸 Image"],["url","🔗 URL"]].map(([id,lbl])=>(
+                  <button key={id} className={`tab ${tab===id?"on":""}`} onClick={()=>{setTab(id);setChosenFile(null);setUrlVal("");}}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+              {(tab==="file"||tab==="image")&&(
+                <div className={`dz ${dragOver?"drag":""}`}
+                  onClick={()=>fileRef.current?.click()}
+                  onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+                  onDragLeave={()=>setDragOver(false)}
+                  onDrop={e=>{e.preventDefault();setDragOver(false);setChosenFile(e.dataTransfer.files[0]);}}>
+                  <div className="dz-icon">{tab==="image"?"📸":"📄"}</div>
+                  <div className="dz-main">{chosenFile?chosenFile.name:tab==="image"?"Drop an image":"Drop a PDF here"}</div>
+                  <div className="dz-sub">{chosenFile?"Ready — click Analyze":"or click to browse"}</div>
+                  <input ref={fileRef} type="file" accept={tab==="image"?"image/*":".pdf"} style={{display:"none"}} onChange={e=>setChosenFile(e.target.files[0])} />
+                </div>
+              )}
+              {tab==="url"&&(
+                <div className="m-sec">
+                  <span className="m-label">Paste a URL</span>
+                  <input className="url-inp" placeholder="https://…" value={urlVal} onChange={e=>setUrlVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&urlVal.trim()&&analyze()} />
+                  <div className="url-note">Note: AI will attempt to summarize based on the URL. For best results, paste article text directly as a note instead.</div>
+                </div>
+              )}
+            </div>
+            <div className="m-footer">
+              <button className="btn-ghost" onClick={closeModal}>Cancel</button>
+              <button className="btn-solid" onClick={analyze} disabled={!((tab==="file"&&chosenFile)||(tab==="image"&&chosenFile)||(tab==="url"&&urlVal.trim()))}>Analyze →</button>
+            </div>
+          </>}
+          {stage==="processing"&&(
+            <div className="m-body">
+              <div className="processing">
+                <div className="spinner"></div>
+                <div className="proc-step">{procStep}</div>
+                <div className="proc-title">Claude is reading your content</div>
+              </div>
+            </div>
+          )}
+          {stage==="review"&&<>
+            <div className="m-body">
+              <div className="ai-banner"><span>✦</span><span className="ai-banner-txt">AI summary — edit freely</span></div>
+              <div className="m-sec">
+                <span className="m-label">Source title</span>
+                <input className="title-inp" value={editTitle} onChange={e=>setEditTitle(e.target.value)} placeholder="What is this from?" />
+              </div>
+              <div className="m-sec">
+                <span className="m-label">Summary</span>
+                <div className="sum-box">
+                  <span className="sum-lbl">✦ AI Draft</span>
+                  <textarea className="sum-ta" value={editSum} onChange={e=>setEditSum(e.target.value)} rows={5} />
+                </div>
+              </div>
+              <div className="m-sec">
+                <span className="m-label">File to panels</span>
+                <div className="panel-picker">
+                  {PANELS.map(p => { const on = editPanels.includes(p.id); return (
+                    <div key={p.id} className={`ppc ${on?"on":""}`} style={{"--ppc":p.color}} onClick={()=>togglePP(p.id)}>
+                      <span className="ppc-icon">{p.icon}</span>
+                      <span className="ppc-lbl">{p.label}</span>
+                      {on&&<span className="ppc-check">✓</span>}
+                    </div>
+                  ); })}
+                </div>
+                {aiPanels.length>0&&(
+                  <div className="ai-sug">AI suggested: <span>{aiPanels.map(id=>getPD(id)).filter(Boolean).map(p=>`${p.icon} ${p.label}`).join(", ")}</span>
+                    {JSON.stringify([...aiPanels].sort())!==JSON.stringify([...editPanels].sort())&&
+                      <button onClick={()=>setEditPanels(aiPanels)} style={{marginLeft:10,fontFamily:"DM Mono,monospace",fontSize:10,letterSpacing:1,background:"none",border:"none",color:"#1B4D35",cursor:"pointer",textTransform:"uppercase"}}>Use →</button>
+                    }
+                  </div>
+                )}
+              </div>
+              <div className="m-sec">
+                <span className="m-label">Your takeaway <span style={{color:"#A8A8A0",letterSpacing:0,textTransform:"none",fontSize:10}}>— optional but encouraged</span></span>
+                <textarea
+                  className={`takeaway-inp ${nudgeTakeaway?"nudge":""}`}
+                  placeholder="What's your takeaway?"
+                  value={editTakeaway}
+                  onChange={e=>{setEditTakeaway(e.target.value);setNudgeTakeaway(false);}}
+                  rows={3}
+                />
+                {nudgeTakeaway&&<div className="nudge-msg">✦ Take a moment — what did this mean to you?</div>}
+              </div>
+            </div>
+            <div className="m-footer">
+              <button className="btn-ghost" onClick={()=>{setStage("input");setApiError("");}}>← Back</button>
+              {nudgeTakeaway&&<button className="btn-ghost" onClick={saveUploadAnyway} style={{fontSize:9}}>Skip →</button>}
+              <button className="btn-solid" onClick={saveUpload}>Save to Pangea →</button>
+            </div>
+          </>}
+        </div>
+      </div>
+    );
+  }
 
-  if (view === "journal") return renderJournalPage();
+  if (!loaded) return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"DM Mono,monospace",fontSize:12,letterSpacing:3,color:"#6B6B6B",background:"#F7F4EE",textTransform:"uppercase"}}>
+      Loading…
+    </div>
+  );
 
-  // ── JOURNAL PAGE ─────────────────────────────────────────────────────────
-  function renderJournalPage() {
-    // Build filtered entry list
-    let jEntries = [...entries];
-    if (jFilter === "notes")   jEntries = jEntries.filter(e => e.type === "note");
-    if (jFilter === "uploads") jEntries = jEntries.filter(e => e.type === "upload");
-    if (jPanel) jEntries = jEntries.filter(e => (e.panels||[]).includes(jPanel));
+  // ── PANEL PAGE ───────────────────────────────────────────────────────────────
+  if (view === "panel" && activePanelId) {
+    const p = getPD(activePanelId);
+    const panelEntries = entries.filter(e => (e.panels||[]).includes(activePanelId));
+    return (
+      <div className="panel-page" style={{fontFamily:"DM Sans,sans-serif",color:"#0D0D0D"}}>
+        <style>{CSS}</style>
+        <div className={`save-toast ${showSaved?"show":""}`}>✓ Saved</div>
+        {showModal&&renderModal()}
+        <Nav current="" />
+        <Masthead right={p.label} />
+        <div className="pp-hero" style={{"--dc":p.color}}>
+          <div className="pp-accent"></div>
+          <div className="pp-hero-body">
+            <div className="pp-label">Panel</div>
+            <div className="pp-title">{p.label}</div>
+            <div className="pp-count">{panelEntries.length} {panelEntries.length===1?"entry":"entries"}</div>
+          </div>
+          <div className="pp-back-col">
+            <button className="pp-back" onClick={()=>{ setView("home"); setActivePanelId(null); }}>← Back</button>
+          </div>
+        </div>
+        {panelEntries.length===0 ? (
+          <div className="pp-empty">
+            <div className="pp-empty-icon">{p.icon}</div>
+            <div className="pp-empty-txt">Nothing filed here yet</div>
+            <div className="pp-empty-sub">Add a note or upload something and tag it to {p.label}</div>
+          </div>
+        ) : (
+          <div className="pp-body">
+            <div className="pp-grid">
+              {panelEntries.map(entry => {
+                const others = (entry.panels||[]).filter(pid=>pid!==activePanelId).map(pid=>getPD(pid)).filter(Boolean);
+                return (
+                  <div key={entry.id} className="pp-card">
+                    <div className="pp-card-meta">
+                      <span className="pp-card-date">{entry.date} · {entry.time}</span>
+                      {entry.sourceType&&<span className="j-badge">{badgeMap[entry.sourceType]}</span>}
+                      {others.map(op=><span key={op.id} className="j-tag" style={{background:op.color}}>{op.label}</span>)}
+                    </div>
+                    {entry.sourceTitle&&<span className="pp-card-src">↳ {entry.sourceTitle}</span>}
+                    <div className="pp-card-txt">{entry.text}</div>
+                    {entry.takeaway&&(
+                      <div className="pp-card-takeaway">
+                        <span className="pp-card-takeaway-lbl">Your takeaway</span>
+                        <div className="pp-card-takeaway-txt">{entry.takeaway}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
-    // Group by date
-    const groups = [];
-    const seen = {};
-    jEntries.forEach(e => {
-      if (!seen[e.date]) { seen[e.date] = []; groups.push({ date: e.date, entries: seen[e.date] }); }
-      seen[e.date].push(e);
-    });
+  // ── QUEUE PAGE ───────────────────────────────────────────────────────────────
+  if (view === "queue") {
+    const pending   = queue.filter(q => !q.done);
+    const completed = queue.filter(q => q.done);
+    const displayed = qTab === "pending" ? pending : completed;
 
-    const postJournal = () => {
-      if (!jWriting.trim()) return;
-      addEntry({id:Date.now(),...ts(),panels:jWritingPanel?[jWritingPanel]:[],type:"note",text:jWriting.trim()});
-      setJWriting(""); setJWritingPanel("");
+    const addToQueue = () => {
+      if (!qInput.trim()) return;
+      addQueue({ id:Date.now(), ...ts(), title:qInput.trim(), url:qUrl.trim(), panel:qPanel, done:false });
+      setQInput(""); setQUrl(""); setQPanel("");
+    };
+
+    const fileToJournal = (item) => {
+      setFtjItem(item);
+      setFtjNote(item.title);
+      setFtjPanel(item.panel || "");
+    };
+
+    const saveFtj = () => {
+      if (!ftjNote.trim()) return;
+      addEntry({ id:Date.now(), ...ts(), panels:ftjPanel?[ftjPanel]:[], type:"note", text:ftjNote.trim() });
+      toggleDone(ftjItem.id);
+      setFtjItem(null); setFtjNote(""); setFtjPanel("");
     };
 
     return (
-      <div className="journal-page" style={{fontFamily:"DM Sans,sans-serif",color:C.black}}>
+      <div className="queue-page" style={{fontFamily:"DM Sans,sans-serif",color:"#0D0D0D"}}>
         <style>{CSS}</style>
-        <div className={`save-indicator ${showSaved?"show":""}`}>✓ Saved</div>
-        {showModal && renderModal()}
-
-        {/* NAV */}
-        <nav className="nav">
-          <div className="nav-wordmark" onClick={()=>setView("home")}>PAN<span className="nav-wordmark-accent">G</span>EA</div>
-          <div className="nav-links">
-            <button className="nav-link" onClick={()=>setView("home")}>Home</button>
-            <button className="nav-link active">Journal</button>
-            <button className="nav-link nav-add" onClick={()=>setShowModal(true)}>+ Add</button>
+        <div className={`save-toast ${showSaved?"show":""}`}>✓ Saved</div>
+        {showModal&&renderModal()}
+        {ftjItem&&(
+          <div className="ftj-overlay" onClick={e=>e.target===e.currentTarget&&setFtjItem(null)}>
+            <div className="ftj-modal">
+              <div className="ftj-hdr">
+                <span className="ftj-title">File to Journal</span>
+                <button className="ftj-close" onClick={()=>setFtjItem(null)}>✕</button>
+              </div>
+              <div className="ftj-body">
+                <div className="ftj-src">From queue: {ftjItem.title}</div>
+                <span className="m-label" style={{marginBottom:8,display:"block"}}>Your note</span>
+                <textarea className="ftj-ta" value={ftjNote} onChange={e=>setFtjNote(e.target.value)} rows={5} placeholder="What did you take from this?" />
+                <div style={{marginTop:16}}>
+                  <span className="m-label" style={{marginBottom:8,display:"block"}}>Panel</span>
+                  <select className="write-sel" style={{border:"2px solid #D8D5CE",padding:"8px 12px",color:"#0D0D0D",background:"#FFFFFF",width:"100%"}} value={ftjPanel} onChange={e=>setFtjPanel(e.target.value)}>
+                    <option value="">No panel</option>
+                    {PANELS.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="ftj-footer">
+                <button className="btn-ghost" onClick={()=>setFtjItem(null)}>Cancel</button>
+                <button className="btn-solid" onClick={saveFtj}>Save to Journal →</button>
+              </div>
+            </div>
           </div>
-        </nav>
-        <div className="masthead">
-          <span className="masthead-l">{today}</span>
-          <span className="masthead-c">&#8220;I did not know what I thought until I wrote it down.&#8221;</span>
-          <span className="masthead-r">Journal</span>
+        )}
+        <Nav current="queue" />
+        <Masthead right="Queue" />
+        <div className="queue-hero">
+          <div className="queue-hero-top">
+            <div className="queue-title">My <em>Queue</em></div>
+            <div className="queue-count">{pending.length} pending · {completed.length} done</div>
+          </div>
+          <div className="queue-input-wrap">
+            <input className="queue-input" placeholder="What do you want to read or look up?" value={qInput} onChange={e=>setQInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addToQueue()} />
+            <input className="queue-url-inp" placeholder="URL (optional)" value={qUrl} onChange={e=>setQUrl(e.target.value)} />
+            <select className="queue-panel-sel" value={qPanel} onChange={e=>setQPanel(e.target.value)}>
+              <option value="">Panel…</option>
+              {PANELS.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+            <button className="queue-add-btn" onClick={addToQueue}>Add →</button>
+          </div>
         </div>
+        <div className="queue-tabs">
+          <button className={`q-tab ${qTab==="pending"?"on":""}`} onClick={()=>setQTab("pending")}>Pending ({pending.length})</button>
+          <button className={`q-tab ${qTab==="done"?"on":""}`}    onClick={()=>setQTab("done")}>Done ({completed.length})</button>
+        </div>
+        <div className="queue-list">
+          {displayed.length===0 ? (
+            <div className="queue-empty">
+              <div className="queue-empty-icon">◻</div>
+              <div className="queue-empty-txt">{qTab==="pending"?"Queue is clear":"Nothing done yet"}</div>
+              <div className="queue-empty-sub">{qTab==="pending"?"Add something to read or look up":"Complete items will appear here"}</div>
+            </div>
+          ) : displayed.map(item => {
+            const pd = item.panel ? getPD(item.panel) : null;
+            return (
+              <div key={item.id} className={`q-item ${item.done?"done":""}`}>
+                <div className={`q-check ${item.done?"checked":""}`} onClick={()=>toggleDone(item.id)}>
+                  {item.done&&"✓"}
+                </div>
+                <div className="q-content">
+                  <div className={`q-title ${item.done?"done":""}`}>{item.title}</div>
+                  {item.url&&<div className="q-url">{item.url}</div>}
+                  <div className="q-meta">
+                    <span className="q-date">{item.date}</span>
+                    {pd&&<span className="q-panel-tag" style={{background:pd.color}}>{pd.label}</span>}
+                  </div>
+                </div>
+                <div className="q-actions">
+                  {item.done&&<button className="q-file-btn" onClick={()=>fileToJournal(item)}>→ Journal</button>}
+                  {!item.done&&item.url&&<a href={item.url} target="_blank" rel="noreferrer" className="q-file-btn">Open →</a>}
+                  {!item.done&&<button className="q-file-btn" onClick={()=>toggleDone(item.id)}>Done ✓</button>}
+                  <button className="q-del" onClick={()=>delQueue(item.id)}>✕</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
-        {/* HERO */}
+  // ── JOURNAL PAGE ─────────────────────────────────────────────────────────────
+  if (view === "journal") {
+    let jEntries = [...entries];
+    if (jFilter==="notes")   jEntries = jEntries.filter(e=>e.type==="note");
+    if (jFilter==="uploads") jEntries = jEntries.filter(e=>e.type==="upload");
+    if (jPanel) jEntries = jEntries.filter(e=>(e.panels||[]).includes(jPanel));
+
+    const groups = [];
+    const seen = {};
+    jEntries.forEach(e => {
+      if (!seen[e.date]) { seen[e.date] = []; groups.push({ date:e.date, entries:seen[e.date] }); }
+      seen[e.date].push(e);
+    });
+
+    return (
+      <div className="journal-page" style={{fontFamily:"DM Sans,sans-serif",color:"#0D0D0D"}}>
+        <style>{CSS}</style>
+        <div className={`save-toast ${showSaved?"show":""}`}>✓ Saved</div>
+        {showModal&&renderModal()}
+        <Nav current="journal" />
+        <Masthead right="Journal" />
         <div className="journal-hero">
           <div>
             <div className="journal-title">Your <em>Journal</em></div>
-            <div className="journal-subtitle">{entries.length} entries across {PANELS.length} panels</div>
+            <div className="journal-subtitle">{entries.length} {entries.length===1?"entry":"entries"} across {PANELS.length} panels</div>
           </div>
           <div className="journal-hero-stats">
             <div className="jh-stat">
@@ -419,37 +640,26 @@ function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* WRITE AREA */}
         <div className="journal-write">
           <div className="journal-write-label">Write</div>
-          <textarea
-            className="journal-textarea"
-            placeholder="What's on your mind?"
-            value={jWriting}
-            rows={3}
+          <textarea className="journal-textarea" placeholder="What's on your mind?" value={jWriting} rows={3}
             onChange={e=>setJWriting(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) postJournal(); }}
-          />
+            onKeyDown={e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) postNote(jWriting,jWritePanel,()=>{setJWriting("");setJWritePanel("");}); }} />
           <div className="journal-write-footer">
-            <select className="write-sel" value={jWritingPanel} onChange={e=>setJWritingPanel(e.target.value)}>
+            <select className="write-sel" style={{border:"1px solid #2E2E2E"}} value={jWritePanel} onChange={e=>setJWritePanel(e.target.value)}>
               <option value="">Tag panel...</option>
               {PANELS.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
-            <span style={{fontFamily:"DM Mono,monospace",fontSize:9,color:C.grey,letterSpacing:1}}>⌘ + Enter to post</span>
-            <button className="post-btn" style={{marginLeft:"auto"}} onClick={postJournal}>Post →</button>
+            <span style={{fontFamily:"DM Mono,monospace",fontSize:9,color:"#6B6B6B",letterSpacing:1}}>⌘+Enter to post</span>
+            <button className="post-btn" style={{marginLeft:"auto"}} onClick={()=>postNote(jWriting,jWritePanel,()=>{setJWriting("");setJWritePanel("");})}>Post →</button>
             <button className="upload-btn" onClick={()=>setShowModal(true)}>↑ Upload</button>
           </div>
         </div>
-
-        {/* BODY: filters + feed */}
         <div className="journal-body">
-
-          {/* FILTERS SIDEBAR */}
           <div className="journal-filters">
             <div className="jf-section">
               <span className="jf-label">Type</span>
-              {[["all","All entries"],["notes","Notes only"],["uploads","Uploads only"]].map(([val,lbl])=>(
+              {[["all","All"],["notes","Notes"],["uploads","Uploads"]].map(([val,lbl])=>(
                 <button key={val} className={`jf-btn ${jFilter===val?"on":""}`} onClick={()=>setJFilter(val)}>{lbl}</button>
               ))}
             </div>
@@ -457,38 +667,35 @@ function Dashboard() {
               <span className="jf-label">Panel</span>
               <button className={`jf-btn ${!jPanel?"on":""}`} onClick={()=>setJPanel(null)}>All panels</button>
               {PANELS.map(p=>(
-                <button key={p.id}
-                  className={`jf-btn ${jPanel===p.id?"on-panel":""}`}
-                  style={jPanel===p.id?{background:p.color,color:"white"}:{}}
+                <button key={p.id} className="jf-btn"
+                  style={jPanel===p.id?{background:p.color,color:"#FFFFFF"}:{}}
                   onClick={()=>setJPanel(jPanel===p.id?null:p.id)}>
                   {p.icon} {p.label}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* FEED */}
           <div className="journal-feed">
-            {groups.length === 0 ? (
+            {groups.length===0 ? (
               <div className="journal-empty">
                 <div className="journal-empty-txt">Nothing here yet</div>
                 <div className="journal-empty-sub">Write a note above or change your filters</div>
               </div>
-            ) : groups.map(group => (
+            ) : groups.map(group=>(
               <div key={group.date} className="day-group">
                 <div className="day-header">
                   <span className="day-date">{group.date}</span>
                   <span className="day-count">{group.entries.length} {group.entries.length===1?"entry":"entries"}</span>
                 </div>
-                {group.entries.map(entry => {
-                  const panels = (entry.panels||[]).map(id=>getPD(id)).filter(Boolean);
+                {group.entries.map(entry=>{
+                  const panels=(entry.panels||[]).map(id=>getPD(id)).filter(Boolean);
                   return (
                     <div key={entry.id} className="journal-entry">
                       <div className="je-meta">
                         <span className="je-time">{entry.time}</span>
                         {panels.map(pd=><span key={pd.id} className="j-tag" style={{background:pd.color}}>{pd.label}</span>)}
                         {entry.sourceType&&<span className="j-badge">{badgeMap[entry.sourceType]}</span>}
-                        <button className="je-del" onClick={()=>deleteEntry(entry.id)}>✕</button>
+                        <button className="je-del" onClick={()=>delEntry(entry.id)}>✕</button>
                       </div>
                       {entry.sourceTitle&&<span className="je-src">↳ {entry.sourceTitle}</span>}
                       <div className="je-text">{entry.text}</div>
@@ -504,205 +711,40 @@ function Dashboard() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
     );
   }
 
-  // ── PANEL PAGE ────────────────────────────────────────────────────────────
-  if (view==="panel" && activePanelPage) {
-    const p = getPD(activePanelPage);
-    const panelEntries = entries.filter(e=>(e.panels||[]).includes(activePanelPage));
-    return (
-      <div className="panel-page" style={{fontFamily:"DM Sans,sans-serif",color:C.black}}>
-        <style>{CSS}</style>
-        <nav className="nav">
-          <div className="nav-wordmark" onClick={()=>{setView("home");setActivePanelPage(null);}}>
-            PAN<span className="nav-wordmark-accent">G</span>EA
-          </div>
-          <div className="nav-links">
-            <button className="nav-link" onClick={()=>{setView("home");setActivePanelPage(null);}}>Home</button>
-            <button className="nav-link nav-add" onClick={()=>setShowModal(true)}>+ Add</button>
-          </div>
-        </nav>
-        <div className="masthead">
-          <span className="masthead-l">{today}</span>
-          <span className="masthead-c">&#8220;I did not know what I thought until I wrote it down.&#8221;</span>
-          <span className="masthead-r">Panel View</span>
-        </div>
-        <div className="pp-hero" style={{"--dc":p.color}}>
-          <div className="pp-accent"></div>
-          <div className="pp-hero-body">
-            <div className="pp-label">Panel</div>
-            <div className="pp-title">{p.label}</div>
-            <div className="pp-count">{panelEntries.length} {panelEntries.length===1?"entry":"entries"}</div>
-          </div>
-          <div className="pp-back-col">
-            <button className="pp-back" onClick={()=>{setView("home");setActivePanelPage(null);}}>← Home</button>
-          </div>
-        </div>
-        {panelEntries.length===0 ? (
-          <div className="pp-empty">
-            <div className="pp-empty-icon">{p.icon}</div>
-            <div className="pp-empty-txt">Nothing filed here yet</div>
-            <div className="pp-empty-sub">Write a note or upload something and tag it to {p.label}</div>
-          </div>
-        ) : (
-          <div className="pp-body">
-            <div className="pp-grid">
-              {panelEntries.map(entry=>{
-                const others=(entry.panels||[]).filter(pid=>pid!==activePanelPage).map(pid=>getPD(pid)).filter(Boolean);
-                return (
-                  <div key={entry.id} className="pp-card">
-                    <div className="pp-card-meta">
-                      <span className="pp-card-date">{entry.date} · {entry.time}</span>
-                      {entry.sourceType&&<span className="j-badge">{badgeMap[entry.sourceType]}</span>}
-                      {others.map(op=><span key={op.id} className="j-tag" style={{background:op.color}}>{op.label.split(" ")[0]}</span>)}
-                    </div>
-                    {entry.sourceTitle&&<span className="pp-card-src">↳ {entry.sourceTitle}</span>}
-                    <div className="pp-card-txt">{entry.text}</div>
-                    {entry.takeaway&&<div style={{marginTop:14,paddingTop:14,borderTop:"1px solid "+C.fog}}>
-                      <span style={{fontFamily:"DM Mono,monospace",fontSize:8,letterSpacing:2,textTransform:"uppercase",color:C.green,display:"block",marginBottom:6}}>Your takeaway</span>
-                      <div style={{fontFamily:"Playfair Display,serif",fontSize:14,lineHeight:1.65,color:C.green,fontStyle:"italic"}}>{entry.takeaway}</div>
-                    </div>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+  // ── HOME PAGE ────────────────────────────────────────────────────────────────
+  const filtered = entries;
 
-        {/* Modal available on panel page too */}
-        {showModal && renderModal()}
-      </div>
-    );
-  }
-
-  function renderModal() {
-    return (
-      <div className="overlay" onClick={e=>e.target===e.currentTarget&&closeModal()}>
-        <div className="modal">
-          <div className="m-hdr">
-            <span className="m-title">{stage==="input"?"Add to Pangea":stage==="processing"?"Analyzing…":"Review & File"}</span>
-            <button className="m-close" onClick={closeModal}>✕</button>
-          </div>
-          {stage==="input"&&<>
-            <div className="m-body">
-              {apiError&&<div className="err-box">⚠ {apiError}</div>}
-              <div className="tabs">
-                {[["file","📄 PDF / Slides"],["image","📸 Photo"],["url","🔗 URL"]].map(([id,lbl])=>(
-                  <button key={id} className={`tab ${tab===id?"on":""}`} onClick={()=>{setTab(id);setChosenFile(null);setUrlVal("");}}>{lbl}</button>
-                ))}
-              </div>
-              {(tab==="file"||tab==="image")&&(
-                <div className={`dz ${dragOver?"drag":""}`} onClick={()=>fileRef.current?.click()} onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDrop={e=>{e.preventDefault();setDragOver(false);setChosenFile(e.dataTransfer.files[0]);}}>
-                  <div className="dz-icon">{tab==="image"?"📸":"📄"}</div>
-                  <div className="dz-main">{chosenFile?chosenFile.name:tab==="image"?"Drop a screenshot or photo":"Drop a PDF here"}</div>
-                  <div className="dz-sub">{chosenFile?"Ready — click Analyze to continue":"or click to browse"}</div>
-                  <input ref={fileRef} type="file" accept={tab==="image"?"image/*":".pdf"} style={{display:"none"}} onChange={e=>setChosenFile(e.target.files[0])} />
-                </div>
-              )}
-              {tab==="url"&&<div className="m-sec"><span className="m-label">Article or page URL</span><input className="url-inp" placeholder="https://hbr.org/…" value={urlVal} onChange={e=>setUrlVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&urlVal.trim()&&analyze()} /></div>}
-            </div>
-            <div className="m-footer">
-              <button className="btn-ghost" onClick={closeModal}>Cancel</button>
-              <button className="btn-solid" onClick={analyze} disabled={!((tab==="file"&&chosenFile)||(tab==="image"&&chosenFile)||(tab==="url"&&urlVal.trim()))}>Analyze with AI →</button>
-            </div>
-          </>}
-          {stage==="processing"&&<div className="m-body"><div className="processing"><div className="spinner"></div><div className="proc-step">{procStep}</div><div className="proc-title">Claude is reading your content</div><div className="proc-sub">Extracting key ideas and connections</div></div></div>}
-          {stage==="review"&&<>
-            <div className="m-body">
-              <div className="ai-banner"><span>✦</span><span className="ai-banner-txt">AI summary — edit freely before saving</span></div>
-              <div className="m-sec"><span className="m-label">Source title</span><input className="title-inp" value={editTitle} onChange={e=>setEditTitle(e.target.value)} placeholder="What is this from?" /></div>
-              <div className="m-sec"><span className="m-label">Summary — make it yours</span><div className="sum-box"><span className="sum-lbl">✦ AI Draft</span><textarea className="sum-ta" value={editSum} onChange={e=>setEditSum(e.target.value)} rows={5}/></div></div>
-              <div className="m-sec">
-                <span className="m-label">File to panels <span style={{color:C.silver,letterSpacing:0,textTransform:"none",fontSize:10}}>— select all that apply</span></span>
-                <div className="panel-picker">
-                  {PANELS.map(p=>{const on=editPanels.includes(p.id);return(
-                    <div key={p.id} className={`ppc ${on?"on":""}`} style={{"--ppc":p.color}} onClick={()=>togglePP(p.id)}>
-                      <span className="ppc-icon">{p.icon}</span>
-                      <span className="ppc-lbl">{p.label.split(" ").slice(0,2).join(" ")}</span>
-                      {on&&<span className="ppc-check">✓</span>}
-                    </div>
-                  );})}
-                </div>
-                {aiPanels.length>0&&(
-                  <div className="ai-sug">AI suggested: <span>{aiPanels.map(id=>getPD(id)).filter(Boolean).map(p=>`${p.icon} ${p.label}`).join(", ")}</span>
-                    {JSON.stringify([...aiPanels].sort())!==JSON.stringify([...editPanels].sort())&&<button onClick={()=>setEditPanels(aiPanels)} style={{marginLeft:10,fontFamily:"DM Mono,monospace",fontSize:10,letterSpacing:1,background:"none",border:"none",color:C.green,cursor:"pointer",textTransform:"uppercase"}}>Use →</button>}
-                  </div>
-                )}
-              </div>
-              <div className="m-sec">
-                <span className="m-label">Your takeaway <span style={{color:C.silver,letterSpacing:0,textTransform:"none",fontSize:10}}>— optional but encouraged</span></span>
-                <div style={{position:"relative"}}>
-                  <textarea
-                    className="sum-ta"
-                    style={{width:"100%",border:"2px solid "+(nudgeTakeaway?C.green:C.fog),padding:"14px 16px",background:"white",minHeight:90,display:"block",transition:"border-color .2s",outline:"none",fontFamily:"Playfair Display,serif",fontSize:15,lineHeight:1.7,color:C.offblack,resize:"none"}}
-                    placeholder="What's your takeaway?"
-                    value={editTakeaway}
-                    onChange={e=>{setEditTakeaway(e.target.value);setNudgeTakeaway(false);}}
-                    rows={3}
-                  />
-                  {nudgeTakeaway&&<div style={{fontFamily:"DM Mono,monospace",fontSize:9,letterSpacing:1,color:C.green,textTransform:"uppercase",marginTop:6}}>✦ Take a moment — what did this mean to you?</div>}
-                </div>
-              </div>
-            </div>
-            <div className="m-footer">
-              <button className="btn-ghost" onClick={()=>{setStage("input");setApiError("");}}>← Back</button>
-              {nudgeTakeaway&&<button className="btn-ghost" style={{color:C.grey,fontSize:9,letterSpacing:1}} onClick={saveAnyway}>Skip →</button>}
-              <button className="btn-solid" onClick={save}>Save to Pangea →</button>
-            </div>
-          </>}
-        </div>
-      </div>
-    );
-  }
-
-  // ── HOME ──────────────────────────────────────────────────────────────────
   return (
-    <div style={{fontFamily:"DM Sans,sans-serif",background:C.cream,minHeight:"100vh",color:C.black}}>
+    <div style={{fontFamily:"DM Sans,sans-serif",background:"#F7F4EE",minHeight:"100vh",color:"#0D0D0D"}}>
       <style>{CSS}</style>
-      <div className={`save-indicator ${showSaved?"show":""}`}>✓ Saved</div>
+      <div className={`save-toast ${showSaved?"show":""}`}>✓ Saved</div>
+      {showModal&&renderModal()}
 
-      {showModal && renderModal()}
-
-      {/* NAV */}
-      <nav className="nav">
-        <div className="nav-wordmark" onClick={()=>setView("home")}>
-          PAN<span className="nav-wordmark-accent">G</span>EA
-        </div>
-        <div className="nav-links">
-          <button className="nav-link active">Home</button>
-          <button className="nav-link" onClick={()=>setView("journal")}>Journal</button>
-          <button className="nav-link nav-add" onClick={()=>setShowModal(true)}>+ Add</button>
-        </div>
-      </nav>
-
-      {/* MASTHEAD */}
-      <div className="masthead">
-        <span className="masthead-l">{today}</span>
-        <span className="masthead-c">&#8220;I did not know what I thought until I wrote it down.&#8221;</span>
-        <span className="masthead-r">Personal Intelligence</span>
-      </div>
+      <Nav current="home" />
+      <Masthead right="Personal Intelligence" />
 
       {/* SEARCH */}
       <div className="search-wrap">
-        <span className="search-icon">⌕</span>
+        <span style={{fontSize:14,color:"#6B6B6B",padding:"18px 0"}}>⌕</span>
         <input className="search-input" placeholder="Search entries, sources, panels…" value={searchQ} onChange={e=>setSearchQ(e.target.value)} />
         {searchQ&&<span className="search-count">{searchResults.length} result{searchResults.length!==1?"s":""}</span>}
         {searchQ&&<button className="search-clear" onClick={()=>setSearchQ("")}>Clear</button>}
       </div>
 
-      {searchQ.trim().length>1 ? (
+      {searchQ.trim().length > 1 ? (
         <div className="search-results">
           <div className="sr-hdr">Results for "{searchQ}"</div>
           {searchResults.length===0
-            ? <div style={{textAlign:"center",padding:"60px 0",fontFamily:"Playfair Display,serif",fontSize:18,color:C.silver}}>No results found</div>
+            ? <div style={{textAlign:"center",padding:"60px 0",fontFamily:"Playfair Display,serif",fontSize:18,color:"#A8A8A0"}}>No results found</div>
             : searchResults.map(entry=>{
                 const panels=(entry.panels||[]).map(id=>getPD(id)).filter(Boolean);
                 return (
-                  <div key={entry.id} className="sr-entry" onClick={()=>{if(panels[0]){setActivePanelPage(panels[0].id);setView("panel");}}}>
+                  <div key={entry.id} className="sr-entry" onClick={()=>{if(panels[0]){setActivePanelId(panels[0].id);setView("panel");}}}>
                     <div className="j-meta">
                       <span className="j-date">{entry.date} · {entry.time}</span>
                       {panels.map(pd=><span key={pd.id} className="j-tag" style={{background:pd.color}}>{pd.label}</span>)}
@@ -710,7 +752,7 @@ function Dashboard() {
                     </div>
                     {entry.sourceTitle&&<span className="j-src">↳ {entry.sourceTitle}</span>}
                     <div className="j-txt" dangerouslySetInnerHTML={{__html:highlight(entry.text,searchQ)}} />
-                    {entry.takeaway&&<div style={{marginTop:8,fontFamily:"Playfair Display,serif",fontSize:13,color:C.green,fontStyle:"italic"}}>↳ {entry.takeaway}</div>}
+                    {entry.takeaway&&<div style={{marginTop:8,fontFamily:"Playfair Display,serif",fontSize:13,color:"#1B4D35",fontStyle:"italic"}}>↳ {entry.takeaway}</div>}
                   </div>
                 );
               })
@@ -718,40 +760,49 @@ function Dashboard() {
         </div>
       ) : (
         <>
-          {/* HERO */}
-          <div className="hero">
-            <div className="hero-left">
-              <div className="hero-eyebrow">Today's Thought</div>
-              <div className="hero-quote">{displayQuote}</div>
-              <div className="hero-source">
-                <span className="hero-source-dot"></span>
-                <span>{displaySource}</span>
-                {quotePool.length>1&&<button onClick={()=>setQuoteIdx(i=>i+1)} style={{marginLeft:8,background:"none",border:"none",cursor:"pointer",fontFamily:"DM Mono,monospace",fontSize:9,letterSpacing:1,color:C.grey,textTransform:"uppercase"}}>Next →</button>}
+          {/* READING NOW */}
+          <div className="reading-now">
+            <div className="rn-label-col">
+              <div>
+                <div className="rn-label">Reading Now</div>
+                <div className="rn-icon">📖</div>
               </div>
             </div>
-            <div className="hero-right">
-              <div>
-                <div className="hero-stat">{thisWeek}</div>
-                <div className="hero-stat-lbl">This week</div>
-              </div>
-              <div className="hero-divider"></div>
-              <div style={{fontFamily:"DM Mono,monospace",fontSize:9,letterSpacing:2,textTransform:"uppercase",color:C.grey,lineHeight:1.8}}>
-                <div style={{color:C.silver,marginBottom:4}}>{entries.length} total entries</div>
-                <div style={{color:C.silver,marginBottom:4}}>{entries.filter(e=>e.type==="upload").length} uploads filed</div>
-                <div style={{color:C.silver}}>{PANELS.length} panels active</div>
-              </div>
+            <div className="rn-body">
+              {books.map((book,i)=>(
+                <div key={book.id} className="rn-book" style={{"--bc":PANELS[i%PANELS.length].color}}>
+                  <div className="rn-book-spine"></div>
+                  <div className="rn-book-info">
+                    <div className="rn-book-title">{book.title}</div>
+                    {book.author&&<div className="rn-book-author">{book.author}</div>}
+                  </div>
+                  <button className="rn-book-del" onClick={()=>saveBooks(books.filter(b=>b.id!==book.id))}>✕</button>
+                </div>
+              ))}
+              {books.length < 3 && !addingBook && (
+                <button className="rn-add" onClick={()=>setAddingBook(true)}>+ Add book</button>
+              )}
+              {addingBook && (
+                <div className="rn-add-form">
+                  <input className="rn-add-inp" placeholder="Title" value={bookTitle} onChange={e=>setBookTitle(e.target.value)} autoFocus
+                    onKeyDown={e=>{ if(e.key==="Enter"&&bookTitle.trim()){ saveBooks([...books,{id:Date.now(),title:bookTitle.trim(),author:bookAuthor.trim()}]); setBookTitle(""); setBookAuthor(""); setAddingBook(false); } if(e.key==="Escape") setAddingBook(false); }} />
+                  <input className="rn-add-inp" placeholder="Author (optional)" value={bookAuthor} onChange={e=>setBookAuthor(e.target.value)} style={{borderLeft:"1px solid #D8D5CE"}}
+                    onKeyDown={e=>{ if(e.key==="Enter"&&bookTitle.trim()){ saveBooks([...books,{id:Date.now(),title:bookTitle.trim(),author:bookAuthor.trim()}]); setBookTitle(""); setBookAuthor(""); setAddingBook(false); } if(e.key==="Escape") setAddingBook(false); }} />
+                  <button className="rn-add-btn" onClick={()=>{ if(bookTitle.trim()){ saveBooks([...books,{id:Date.now(),title:bookTitle.trim(),author:bookAuthor.trim()}]); setBookTitle(""); setBookAuthor(""); setAddingBook(false); } }}>Add</button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* WRITE BAR */}
           <div className="write-bar">
             <span className="write-lbl">Write</span>
-            <input className="write-input" placeholder="What's on your mind?" value={journalText} onChange={e=>setJournalText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&postNote()} />
-            <select className="write-sel" value={journalPanel} onChange={e=>setJournalPanel(e.target.value)}>
+            <input className="write-input" placeholder="What's on your mind?" value={writeText} onChange={e=>setWriteText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&postNote(writeText,writePanel,()=>{setWriteText("");setWritePanel("");})} />
+            <select className="write-sel" value={writePanel} onChange={e=>setWritePanel(e.target.value)}>
               <option value="">Tag panel...</option>
               {PANELS.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
-            <button className="post-btn" onClick={postNote}>Post →</button>
+            <button className="post-btn" onClick={()=>postNote(writeText,writePanel,()=>{setWriteText("");setWritePanel("");})}>Post →</button>
             <button className="upload-btn" onClick={()=>setShowModal(true)}>↑ Upload</button>
           </div>
 
@@ -760,16 +811,16 @@ function Dashboard() {
             <div className="panels-section">
               <div className="sec-hdr">
                 <span className="sec-title">Panels</span>
-                <span className="sec-count">{PANELS.length} active</span>
+                <span className="sec-sub">{PANELS.length} active</span>
               </div>
               <div className="panel-grid">
                 {PANELS.map(p=>{
-                  const count=entries.filter(e=>(e.panels||[]).includes(p.id)).length;
+                  const count = entries.filter(e=>(e.panels||[]).includes(p.id)).length;
                   return (
-                    <div key={p.id} className="pc" style={{"--pc":p.color}} onClick={()=>{setActivePanelPage(p.id);setView("panel");}}>
-                      <span className="pi">{p.icon}</span>
-                      <div className="pn">{p.label}</div>
-                      <div className="pp">{count} {count===1?"entry":"entries"}</div>
+                    <div key={p.id} className="pc" style={{"--pc":p.color}} onClick={()=>{setActivePanelId(p.id);setView("panel");}}>
+                      <span className="pc-icon">{p.icon}</span>
+                      <div className="pc-name">{p.label}</div>
+                      <div className="pc-count">{count} {count===1?"entry":"entries"}</div>
                     </div>
                   );
                 })}
@@ -779,35 +830,26 @@ function Dashboard() {
             {/* JOURNAL SIDEBAR */}
             <div className="j-sidebar">
               <div className="sec-hdr">
-                <span className="sec-title">Journal</span>
-                <span className="sec-count">{filtered.length} entries</span>
+                <span className="sec-title">Recent</span>
+                <span className="sec-sub">{filtered.length} {filtered.length===1?"entry":"entries"}</span>
               </div>
               <div className="filter-bar">
                 <button className={`fb ${!filterPanel?"on":""}`} onClick={()=>setFilterPanel(null)}>All</button>
                 {PANELS.map(p=>(
-                  <button key={p.id} className={`fb ${filterPanel===p.id?"on":""}`} style={filterPanel===p.id?{background:p.color,borderColor:p.color}:{}} onClick={()=>setFilterPanel(filterPanel===p.id?null:p.id)}>{p.label.split(" ")[0]}</button>
+                  <button key={p.id} className={`fb ${filterPanel===p.id?"on":""}`}
+                    style={filterPanel===p.id?{background:p.color,borderColor:p.color,color:"#FFFFFF"}:{}}
+                    onClick={()=>setFilterPanel(filterPanel===p.id?null:p.id)}>
+                    {p.icon}
+                  </button>
                 ))}
               </div>
               <div className="j-feed">
-                {filtered.map(entry=>{
-                  const panels=(entry.panels||[]).map(id=>getPD(id)).filter(Boolean);
-                  return (
-                    <div key={entry.id} className="j-entry">
-                      <div className="j-meta">
-                        <span className="j-date">{entry.date} · {entry.time}</span>
-                        {panels.map(pd=><span key={pd.id} className="j-tag" style={{background:pd.color}}>{pd.label.split(" ")[0]}</span>)}
-                        {entry.sourceType&&<span className="j-badge">{badgeMap[entry.sourceType]}</span>}
-                        <button className="del-btn" onClick={e=>{e.stopPropagation();deleteEntry(entry.id);}}>✕</button>
-                      </div>
-                      {entry.sourceTitle&&<span className="j-src">↳ {entry.sourceTitle}</span>}
-                      <div className="j-txt">{entry.text}</div>
-                      {entry.takeaway&&<div style={{marginTop:10,paddingTop:10,borderTop:"1px solid "+C.fog}}>
-                        <span style={{fontFamily:"DM Mono,monospace",fontSize:8,letterSpacing:2,textTransform:"uppercase",color:C.green,display:"block",marginBottom:4}}>Your takeaway</span>
-                        <div className="j-txt" style={{color:C.green,fontStyle:"italic"}}>{entry.takeaway}</div>
-                      </div>}
-                    </div>
-                  );
-                })}
+                {(filterPanel ? filtered.filter(e=>(e.panels||[]).includes(filterPanel)) : filtered).map(entry=>(
+                  <div key={entry.id} className="j-entry">
+                    <EntryCard entry={entry} />
+                  </div>
+                ))}
+                {filtered.length===0&&<div style={{fontFamily:"Playfair Display,serif",fontSize:16,color:"#A8A8A0",padding:"24px 0"}}>Nothing yet — write something above.</div>}
               </div>
             </div>
           </div>
@@ -817,20 +859,20 @@ function Dashboard() {
             <div className="src-label">Sources</div>
             <div className="src-grid">
               {[
-              ["Wall Street Journal","Business & markets","https://wsj.com"],
-              ["Bloomberg","Finance & data","https://bloomberg.com"],
-              ["Substack","Your subscribed voices","https://substack.com"],
-              ["Yahoo Finance","Markets & portfolio","https://finance.yahoo.com"],
-              ["The Ringer","Sports & culture","https://theringer.com"],
-              ["Prof G Pod","Scott Galloway","https://podcasts.apple.com/us/podcast/the-prof-g-pod-with-scott-galloway/id1498802610"],
-              ["Plain English","Derek Thompson","https://podcasts.apple.com/us/podcast/plain-english-with-derek-thompson/id1596186727"],
-              ["Pints with Aquinas","Matt Fradd","https://pintswithaaquinas.com"],
-              ["Word on Fire","Bishop Barron","https://wordonfire.org"],
-            ].map(([name,desc,href])=>(
+                ["Wall Street Journal","Business & markets","https://wsj.com"],
+                ["Bloomberg","Finance & data","https://bloomberg.com"],
+                ["Yahoo Finance","Markets & portfolio","https://finance.yahoo.com"],
+                ["The Ringer","Sports & culture","https://theringer.com"],
+                ["Prof G Pod","Scott Galloway","https://podcasts.apple.com/us/podcast/the-prof-g-pod-with-scott-galloway/id1498802610"],
+                ["Plain English","Derek Thompson","https://podcasts.apple.com/us/podcast/plain-english-with-derek-thompson/id1596186727"],
+                ["Pints with Aquinas","Matt Fradd","https://pintswithaaquinas.com"],
+                ["Word on Fire","Bishop Barron","https://wordonfire.org"],
+                ["Substack","Your subscriptions","https://substack.com"],
+              ].map(([name,desc,href])=>(
                 <div key={name} className="src-item">
                   <div className="src-name">{name}</div>
                   <div className="src-desc">{desc}</div>
-                  {href?<a className="src-link" href={href} target="_blank" rel="noreferrer">Open →</a>:<span className="src-link">Configure →</span>}
+                  <a className="src-link" href={href} target="_blank" rel="noreferrer">Open →</a>
                 </div>
               ))}
             </div>
@@ -841,7 +883,9 @@ function Dashboard() {
   );
 }
 
-  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(Dashboard,null));
+
+
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(Pangea, null));
   </script>
 </body>
 </html>
